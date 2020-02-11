@@ -170,6 +170,9 @@ MacWindowManager::MacWindowManager(uint32 mode) {
 
 	_fullRefresh = true;
 
+	_palette = nullptr;
+	_paletteSize = 0;
+
 	for (int i = 0; i < ARRAYSIZE(fillPatterns); i++)
 		_patterns.push_back(fillPatterns[i]);
 
@@ -496,6 +499,12 @@ void MacWindowManager::popCursor() {
 void MacWindowManager::passPalette(const byte *pal, uint size) {
 	const byte *p = pal;
 
+	if (_palette)
+		free(_palette);
+
+	_palette = (byte *)malloc(size * 3);
+	_paletteSize = size;
+
 	_colorWhite = -1;
 	_colorBlack = -1;
 
@@ -508,7 +517,9 @@ void MacWindowManager::passPalette(const byte *pal, uint size) {
 		if (_colorBlack == -1 && p[0] == 0x00 && p[1] == 0x00 && p[2] == 0x00)
 			_colorBlack = i;
 
-		p += 3;
+		_palette[i * 3 + 0] = *p++;
+		_palette[i * 3 + 1] = *p++;
+		_palette[i * 3 + 2] = *p++;
 	}
 
 	if (_colorWhite != -1 && _colorBlack != -1)
@@ -537,6 +548,26 @@ void MacWindowManager::passPalette(const byte *pal, uint size) {
 
 	_colorWhite = bi;
 	_colorBlack = di;
+}
+
+uint MacWindowManager::findBestColor(byte cr, byte cg, byte cb) {
+	uint bestColor = 0;
+	double min = 0xFFFFFFFF;
+
+	for (uint i = 0; i < _paletteSize; ++i) {
+		int rmean = (*(_palette + 3 * i + 0) + cr) / 2;
+		int r = *(_palette + 3 * i + 0) - cr;
+		int g = *(_palette + 3 * i + 1) - cg;
+		int b = *(_palette + 3 * i + 2) - cb;
+
+		double dist = sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
+		if (min > dist) {
+			bestColor = i;
+			min = dist;
+		}
+	}
+
+	return bestColor;
 }
 
 void MacWindowManager::pauseEngine(bool pause) {

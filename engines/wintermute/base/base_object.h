@@ -87,7 +87,7 @@ public:
 	bool updateOneSound(BaseSound *sound);
 	int32 _sFXVolume;
 
-	virtual bool handleMouseWheel(int delta);
+	virtual bool handleMouseWheel(int32 delta);
 	virtual bool handleMouse(TMouseEvent event, TMouseButton button);
 	virtual bool handleKeypress(Common::Event *event, bool printable = false);
 	virtual int32 getHeight();
@@ -105,8 +105,8 @@ public:
 	BaseSprite *_cursor;
 	bool _sharedCursors;
 	BaseSprite *_activeCursor;
-	virtual bool saveAsText(BaseDynamicBuffer *buffer, int indent);
-	virtual bool listen(BaseScriptHolder *param1, uint32 param2);
+	virtual bool saveAsText(BaseDynamicBuffer *buffer, int indent) override;
+	virtual bool listen(BaseScriptHolder *param1, uint32 param2) override;
 
 	bool _movable;
 	bool _zoomable;

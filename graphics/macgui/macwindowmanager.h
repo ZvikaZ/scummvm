@@ -221,6 +221,7 @@ public:
 	void setEngineRedrawCallback(void *engine, void (*redrawCallback)(void *engine));
 
 	void passPalette(const byte *palette, uint size);
+	uint findBestColor(byte cr, byte cg, byte cb);
 
 public:
 	MacFontManager *_fontMan;
@@ -257,6 +258,8 @@ private:
 	bool _fullRefresh;
 
 	MacPatterns _patterns;
+	byte *_palette;
+	uint _paletteSize;
 
 	MacMenu *_menu;
 	uint32 _menuDelay;

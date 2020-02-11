@@ -36,7 +36,7 @@ namespace Common {
 const char *const kGuiKeymapName = "gui";
 const char *const kGlobalKeymapName = "global";
 
-class Action;
+struct Action;
 class DelayedEventSource;
 struct HardwareInput;
 class HardwareInputSet;
@@ -144,9 +144,10 @@ private:
 
 	KeymapArray _keymaps;
 
-	Event executeAction(const Action *act, IncomingEventType incomingType);
+	Event executeAction(const Action *act, const Event &incomingEvent);
 	EventType convertStartToEnd(EventType eventType);
 	IncomingEventType convertToIncomingEventType(const Event &ev) const;
+	static bool isMouseEvent(const Event &event);
 
 	void hardcodedEventMapping(Event ev);
 };

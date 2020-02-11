@@ -4,13 +4,16 @@ Programmcodes finden Sie auf Englisch unter:
 
 #### 2.2.0 (DD.MM.YYYY)
 
+ Dreamweb:
+   - Unterstützung für russische Fan-Übersetzung hinzugefügt.
+
  Kyra:
    - Unterstützung für die PC-98-Version von Eye of the Beholder I hinzugefügt.
 
  Sword1:
    - Unterstützung für lokalisierte Menüs in der russischen Version der Novy Disk Trilogy hinzugefügt.
 
-#### 2.1.1 (31.01.2020)
+#### 2.1.1 ":More sheep:" (31.01.2020)
 
  Allgemein:
    - Absturz beim Wechsel zwischen einigen Sprachen der Benutzeroberfläche korrigiert.

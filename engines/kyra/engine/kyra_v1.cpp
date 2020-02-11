@@ -55,6 +55,7 @@ KyraEngine_v1::KyraEngine_v1(OSystem *system, const GameFlags &flags)
 	_trackMapSize = 0;
 	_lastMusicCommand = -1;
 	_curSfxFile = _curMusicTheme = -1;
+	_preventScriptSfx = false;
 
 	_gameToLoad = -1;
 
@@ -121,7 +122,7 @@ Common::Error KyraEngine_v1::init() {
 			// Kyra games.
 			MidiDriver::DeviceHandle dev = MidiDriver::detectDevice(MDT_PCSPK | MDT_MIDI | MDT_ADLIB | ((_flags.gameID == GI_KYRA2 || _flags.gameID == GI_LOL) ? MDT_PREFER_GM : MDT_PREFER_MT32));
 			if (MidiDriver::getMusicType(dev) == MT_ADLIB) {
-				_sound = new SoundAdLibPC(this, _mixer);
+				_sound = new SoundPC_v1(this, _mixer, Sound::kAdLib);
 			} else {
 				Sound::kType type;
 				const MusicType midiType = MidiDriver::getMusicType(dev);
@@ -153,7 +154,7 @@ Common::Error KyraEngine_v1::init() {
 				// missing. It's just that at least at the time of writing they
 				// are decidedly inferior to the AdLib ones.
 				if (ConfMan.getBool("multi_midi")) {
-					SoundAdLibPC *adlib = new SoundAdLibPC(this, _mixer);
+					SoundPC_v1 *adlib = new SoundPC_v1(this, _mixer, Sound::kAdLib);
 					assert(adlib);
 
 					_sound = new MixedSoundDriver(this, _mixer, soundMidiPc, adlib);
