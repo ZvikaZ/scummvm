@@ -215,6 +215,14 @@ public:
 	 * Determines whether the given object method is in the current stack.
 	 */
 	bool callInStack(const reg_t object, const Selector selector) const;
+
+
+#ifdef ENABLE_SCI32
+	// save thumbnail upon menu bar hiding, to solve bug #9752 (saved thumbnail useless because they show control panel / keyboard)
+	// it's used only for specific games (currently: QFG4) which has this bug ; and ignored for the others
+	Graphics::Surface _thumb;
+#endif // ENABLE_SCI32
+
 };
 
 } // End of namespace Sci

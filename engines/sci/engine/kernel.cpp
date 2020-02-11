@@ -860,7 +860,7 @@ void Kernel::loadKernelNames(GameFeatures *features) {
 	// kernel calls.
 	if (getSciVersion() >= SCI_VERSION_2) {
 		const uint kernelListSize = _kernelNames.size();
-		_kernelNames.resize(0xe2);
+		_kernelNames.resize(0xe3);
 		for (uint id = kernelListSize; id < 0xe0; ++id) {
 			_kernelNames[id] = "Dummy";
 		}
@@ -871,6 +871,11 @@ void Kernel::loadKernelNames(GameFeatures *features) {
 
 		// Used by GuestAdditions to support integrated save/load dialogue
 		_kernelNames[kScummVMSaveLoadId] = "ScummVMSaveLoad";
+
+		// Used to save thumbnail upon menu bar hiding, to solve bug #9752 (saved thumbnail useless because they show control panel / keyboard)
+		// (currently it has been solved only for QFG4)
+		_kernelNames[kScummVMMenuBarHideId] = "ScummVMMenuBarHide";
+
 	}
 #endif
 

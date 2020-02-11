@@ -99,8 +99,9 @@ struct SciWorkaroundEntry;	// from workarounds.h
 // ---- Kernel signatures -----------------------------------------------------
 
 enum {
-	kScummVMWaitId     = 0xe0,
-	kScummVMSaveLoadId = 0xe1
+	kScummVMWaitId         = 0xe0,
+	kScummVMSaveLoadId     = 0xe1,
+	kScummVMMenuBarHideId  = 0xe2
 };
 
 // internal kernel signature data
@@ -490,6 +491,7 @@ reg_t kCheckSaveGame32(EngineState *s, int argc, reg_t *argv);
 reg_t kMakeSaveCatName(EngineState *s, int argc, reg_t *argv);
 reg_t kMakeSaveFileName(EngineState *s, int argc, reg_t *argv);
 reg_t kScummVMSaveLoad(EngineState *s, int argc, reg_t *argv);
+reg_t kScummVMMenuBarHide(EngineState* s, int argc, reg_t* argv);
 
 reg_t kSetHotRectangles(EngineState *s, int argc, reg_t *argv);
 reg_t kIsHiRes(EngineState *s, int argc, reg_t *argv);

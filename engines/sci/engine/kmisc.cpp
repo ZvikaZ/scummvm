@@ -22,6 +22,9 @@
 
 #include "common/config-manager.h"
 #include "common/system.h"
+#ifdef ENABLE_SCI32
+#include "graphics/scaler.h"
+#endif
 
 #include "sci/sci.h"
 #include "sci/debug.h"
@@ -270,6 +273,24 @@ reg_t kGetTime(EngineState *s, int argc, reg_t *argv) {
 
 	return make_reg(0, retval);
 }
+
+#ifdef ENABLE_SCI32
+// save thumbnail upon menu bar hiding, to solve bug #9752 (saved thumbnail useless because they show control panel / keyboard)
+// (currently it has been solved only for QFG4)
+reg_t kScummVMMenuBarHide(EngineState* s, int argc, reg_t* argv) {
+	// get rid of previous thumb, if exists
+	if (s->_thumb.w) {
+		s->_thumb.free();
+	}
+
+	if (!createThumbnailFromScreen(&s->_thumb)) {
+		warning("Couldn't create thumbnail from screen, aborting thumbnail save");
+	}
+
+	// the patch replaced 'callk kUpdatePlane' with 'callk kScummVMMenuBarHide', therefore we need to execute and return it
+	return kUpdatePlane(s, argc, argv);
+}
+#endif
 
 enum {
 	K_MEMORY_ALLOCATE_CRITICAL		= 1,

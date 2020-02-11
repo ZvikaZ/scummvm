@@ -1445,7 +1445,17 @@ void set_savegame_metadata(Common::Serializer &ser, Common::WriteStream *fh, con
 	meta.gameObjectOffset = g_sci->getGameObject().getOffset();
 
 	sync_SavegameMetadata(ser, meta);
+#ifdef ENABLE_SCI32
+	if (g_sci->getEngineState()->_thumb.w) {
+		// use saved thumbnail, to avoid control panel showing in the thumbnail in games such as QFG4
+		Graphics::saveThumbnail(*fh, g_sci->getEngineState()->_thumb);
+	} else {
+		// no thumbnail saved, because it's not needed for this game, take thumbnail as usual
+		Graphics::saveThumbnail(*fh);
+	}
+#else
 	Graphics::saveThumbnail(*fh);
+#endif
 }
 
 void set_savegame_metadata(Common::WriteStream *fh, const Common::String &savename, const Common::String &version) {

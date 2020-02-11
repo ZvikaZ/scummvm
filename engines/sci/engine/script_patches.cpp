@@ -15441,6 +15441,35 @@ static const uint16 qfg4BoneCageTellerPatch[] = {
 	PATCH_END
 };
 
+
+// Some SCI32 games have an issue that the saved games thumbnails is useless because it's hidden
+// by the configuration panel (QFG4) or by the keyboard (Shivers).
+// Maybe this problems appears on other SCI32 games as well, should be checked.
+//
+// We avoid that by keeping the thumbnail everytime the menu bar is hidden,
+// and when time comes to save the game, we use that thumbnail instead of taking
+// a new one (which would be with the control panel/keyboard).
+//
+// I couldn't manage to make the thumbnail completely clean, and the menu bar is still part
+// of it. But I think it's good enough.
+//
+// Applies to: All versions
+// Responsible method: mainIconBar::hide
+// Fixes bug: #9752 (currently only for QFG4)
+static const uint16 qfg4SaveGameThumbSignature[] = {
+	SIG_MAGICDWORD,
+	0x43, 0x1b, 0x02, 0x00,							// callk UpdatePlane, 2
+	0x48,											// ret
+	SIG_END
+};
+
+static const uint16 qfg4SaveGameThumbPatch[] = {
+	0x43, kScummVMMenuBarHideId, 0x02, 0x00,	    // callk kScummVMMenuBarHideId, 2
+	0x48,										    // ret
+	PATCH_END
+};
+
+
 //          script, description,                                     signature                      patch
 static const SciScriptPatcherEntry qfg4Signatures[] = {
 	{  true,     0, "prevent autosave from deleting save games",   1, qfg4AutosaveSignature,         qfg4AutosavePatch },
@@ -15553,6 +15582,7 @@ static const SciScriptPatcherEntry qfg4Signatures[] = {
 	{  true,   840, "fix conditional void calls",                  2, qfg4ConditionalVoidSignature,  qfg4ConditionalVoidPatch },
 	{  true,   855, "fix conditional void calls",                  1, qfg4ConditionalVoidSignature,  qfg4ConditionalVoidPatch },
 	{  true,   870, "fix conditional void calls",                  5, qfg4ConditionalVoidSignature,  qfg4ConditionalVoidPatch },
+	{  true, 64937, "save thumbnail before menu bar is hidden",	   1, qfg4SaveGameThumbSignature,    qfg4SaveGameThumbPatch },
 	{  true, 64990, "increase number of save games (1/2)",         1, sci2NumSavesSignature1,        sci2NumSavesPatch1 },
 	{  true, 64990, "increase number of save games (2/2)",         1, sci2NumSavesSignature2,        sci2NumSavesPatch2 },
 	{  true, 64990, "disable change directory button",             1, sci2ChangeDirSignature,        sci2ChangeDirPatch },
