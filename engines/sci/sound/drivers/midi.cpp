@@ -308,6 +308,7 @@ void MidiPlayer_Midi::noteOn(int channel, int note, int velocity) {
 
 void MidiPlayer_Midi::controlChange(int channel, int control, int value) {
 	assert(channel <= 15);
+	bool standard_midi_controller = true;
 
 	switch (control) {
 	case 0x07:
@@ -340,6 +341,9 @@ void MidiPlayer_Midi::controlChange(int channel, int control, int value) {
 		_channels[channel].hold = value;
 		break;
 	case 0x4b:	// voice mapping
+		// this is an internal Sierra command, and shouldn't be sent to the real MIDI driver
+		// TODO: investigate - maybe it shouldn't have reached this point at all
+		standard_midi_controller = false;
 		break;
 	case 0x4e:	// velocity
 		break;
@@ -349,7 +353,8 @@ void MidiPlayer_Midi::controlChange(int channel, int control, int value) {
 		break;
 	}
 
-	_driver->send(0xb0 | channel, control, value);
+	if (standard_midi_controller)
+		_driver->send(0xb0 | channel, control, value);
 }
 
 void MidiPlayer_Midi::setPatch(int channel, int patch) {
@@ -1217,6 +1222,9 @@ int MidiPlayer_Midi::open(ResourceManager *resMan) {
 				}
 			}
 		}
+		// make sure that the device is in GM1 mode (some synths start in GS, or GM2, mode)
+		static const byte turnOnGm1Mode[] = { 0x7E, 0x7F, 0x09, 0x01 };
+		_driver->sysEx(turnOnGm1Mode, sizeof(turnOnGm1Mode));
 	}
 
 	return 0;
@@ -1227,6 +1235,12 @@ void MidiPlayer_Midi::close() {
 		// Send goodbye message
 		sendMt32SysEx(0x200000, SciSpan<const byte>(_goodbyeMsg, 20), true);
 	}
+
+	// fix bug #6687 - make sure that there aren't hanging notes
+	for (int i = 0; i < 16; i++) {
+		controlChange(i, 0xb0, 0x79);	// Reset All Controllers
+		controlChange(i, 0xb0, 0x78);	// All Sound off
+	};
 
 	_driver->setTimerCallback(NULL, NULL);
 	_driver->close();
