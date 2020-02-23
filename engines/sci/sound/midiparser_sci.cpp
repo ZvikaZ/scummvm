@@ -402,7 +402,7 @@ void MidiParser_SCI::sendInitCommands() {
 				byte voiceCount = _track->channels[i].poly;
 				byte num = _track->channels[i].number;
 				// TODO: Should we skip the control channel?
-				sendToDriver(0xB0 | num, 0x4B, voiceCount);
+				//Z sendToDriver(0xB0 | num, 0x4B, voiceCount);			//Z what's this??
 			}
 		}
 	}
@@ -519,7 +519,7 @@ void MidiParser_SCI::trackState(uint32 b) {
 		case 0x40: // sustain
 			s._sustain = (op2 != 0);
 			break;
-		case 0x4B: // voices
+		case 0x4B: // voices			//Z what's this???
 			if (s._voices != op2) {
 				// CHECKME: Should we directly call remapChannels() if _mainThreadCalled?
 				debugC(2, kDebugLevelSound, "Dynamic voice change (%d to %d)", s._voices, op2);
@@ -788,7 +788,7 @@ bool MidiParser_SCI::processEvent(const EventInfo &info, bool fireEvents) {
 				break;
 			case 0x4B:	// voice mapping
 				// TODO: is any support for this needed at the MIDI parser level?
-				warning("Unhanded SCI MIDI command 0x%x - voice mapping (parameter %d)", info.basic.param1, info.basic.param2);
+				warning("Unhanded SCI MIDI command 0x%x - voice mapping (parameter %d)", info.basic.param1, info.basic.param2);   //Z note this...
 				return true;
 			default:
 				warning("Unhandled SCI MIDI command 0x%x (parameter %d)", info.basic.param1, info.basic.param2);
@@ -942,7 +942,7 @@ void MidiParser_SCI::remapChannel(int channel, int devChannel) {
 	byte pitch2 = (s._pitchWheel >> 7) & 0x7F;
 
 	sendToDriver_raw(0x0040B0 | devChannel); // sustain off
-	sendToDriver_raw(0x004BB0 | devChannel | (s._voices << 16));
+	//sendToDriver_raw(0x004BB0 | devChannel | (s._voices << 16));			//Z this goes to controller 75 - is this the source of Chris' problems?
 	sendToDriver_raw(0x0000C0 | devChannel | (s._patch << 8));
 	sendToDriver_raw(0x0007B0 | devChannel | (channelVolume << 16));
 	sendToDriver_raw(0x000AB0 | devChannel | (s._pan << 16));
