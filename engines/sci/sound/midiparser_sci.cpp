@@ -879,6 +879,8 @@ void MidiParser_SCI::allNotesOff() {
 
 	for (i = 0; i < 16; ++i) {
 		if (_channelRemap[i] != -1) {
+			static const byte turnOnGm1Mode[] = { 0x7E, 0x7F, 0x09, 0x01 };
+			_driver->sysEx(turnOnGm1Mode, sizeof(turnOnGm1Mode));
 			sendToDriver(0xB0 | i, 0x7b, 0); // All notes off - not always enough, see bug #6687 ..
 											 // .. therefore send also:
 			sendToDriver(0xB0 | i, 0x78, 0); // - All Sound off
