@@ -1221,6 +1221,9 @@ int MidiPlayer_Midi::open(ResourceManager *resMan) {
 				}
 			}
 		}
+		// make sure that the device is in GM1 mode (some synths start in GS, or GM2, mode)
+		static const byte turnOnGm1Mode[] = { 0x7E, 0x7F, 0x09, 0x01 };
+		_driver->sysEx(turnOnGm1Mode, sizeof(turnOnGm1Mode));
 	}
 
 	return 0;
