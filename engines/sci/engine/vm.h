@@ -338,7 +338,6 @@ void script_adjust_opcode_formats();
  * @param[in] argp			Pointer to the first supplied argument
  * @return					A pointer to the new exec stack TOS entry
  */
-//Z void execute_method_hook_start(Sci::EngineState *s, const uint16 &pubfunct);
 ExecStack *execute_method(EngineState *s, uint16 script, uint16 pubfunct,
 		StackPtr sp, reg_t calling_obj, uint16 argc, StackPtr argp);
 
