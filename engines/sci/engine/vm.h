@@ -338,6 +338,7 @@ void script_adjust_opcode_formats();
  * @param[in] argp			Pointer to the first supplied argument
  * @return					A pointer to the new exec stack TOS entry
  */
+//Z void execute_method_hook_start(Sci::EngineState *s, const uint16 &pubfunct);
 ExecStack *execute_method(EngineState *s, uint16 script, uint16 pubfunct,
 		StackPtr sp, reg_t calling_obj, uint16 argc, StackPtr argp);
 
@@ -369,6 +370,8 @@ ExecStack *send_selector(EngineState *s, reg_t send_obj, reg_t work_obj,
  * @param[in] s			The state to use
  */
 void run_vm(EngineState *s);
+
+void vm_hook_before_exec(Sci::EngineState *s, const byte &opcode, int16  opparams[4], Script *local_script);
 
 /**
  * Debugger functionality

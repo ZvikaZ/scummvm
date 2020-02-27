@@ -212,7 +212,58 @@ static void write_var(EngineState *s, int type, int index, reg_t value) {
 #define PUSH32(a) (*(validate_stack_addr(s, (s->xs->sp)++)) = (a))
 #define POP32() (*(validate_stack_addr(s, --(s->xs->sp))))
 
+bool hook_exec_match(Sci::EngineState *s, int patchScriptNumber, const char *patchObjName, Common::String patchSelector, SegmentId patchSegment, uint32 patchOffset) {
+	const ExecStack call = s->_executionStack.back();
+	if (call.type != EXEC_STACK_TYPE_CALL)
+		return false;
+
+	int scriptNumber = s->_segMan->getScript(call.addr.pc.getSegment())->getScriptNumber();
+	const char *objName = s->_segMan->getObjectName(call.sendp);
+	Common::String selector = nullptr;
+	if (call.debugSelector != -1)
+		selector = g_sci->getKernel()->getSelectorName(call.debugSelector);
+
+	//// are these useful??
+	//int exportId = call.debugExportId;
+	//int localCallOffset = call.debugLocalCallOffset;
+
+	SegmentId segment = s->xs->addr.pc.getSegment();
+	uint32 offset = g_sci->_debugState.old_pc_offset;
+
+	return scriptNumber == patchScriptNumber && strcmp(objName, patchObjName) == 0 && selector == patchSelector &&
+		segment == patchSegment && offset == patchOffset;
+
+	//Common::String kernelFunction = nullptr;
+	//Common::String kernelSubFunction = nullptr;
+
+	//if (type == EXEC_STACK_TYPE_KERNEL) {
+	//	kernelFunction = g_sci->getKernel()->getKernelName(call.debugKernelFunction);
+	//	kernelSubFunction = g_sci->getKernel()->getKernelName(call.debugKernelFunction, call.debugKernelSubFunction);
+	//}
+}
+
+//void execute_method_hook_start(Sci::EngineState *s, const uint16 &pubfunct) {
+//	if (execute_method_hook_match(s, 58, "egoRuns", "changeState", , , )) {
+//		const ExecStack call = s->_executionStack.back();
+//		int exportId = call.debugExportId;
+//		int localCallOffset = call.debugLocalCallOffset;
+//		warning("Hi, it's me, start. pubfunct=%d, exportId=%d, localCallOffset=%d, pc=%4x:%4x", pubfunct, exportId, localCallOffset, call.addr.pc._segment, call.addr.pc._offset);
+//	}
+//}
+//
+//void execute_method_hook_end(Sci::EngineState *s, const uint16 &pubfunct) {
+//	if (execute_method_hook_match(s, 58, "egoRuns", "changeState", , , )) {
+//		const ExecStack call = s->_executionStack.back();
+//		int exportId = call.debugExportId;
+//		int localCallOffset = call.debugLocalCallOffset;
+//		warning("Hi, it's me, end. pubfunct=%d, exportId=%d, localCallOffset=%d, pc=%4x:%4x", pubfunct, exportId, localCallOffset, call.addr.pc._segment, call.addr.pc._offset);
+//	}
+//}
+
 ExecStack *execute_method(EngineState *s, uint16 script, uint16 pubfunct, StackPtr sp, reg_t calling_obj, uint16 argc, StackPtr argp) {
+
+//Z	execute_method_hook_start(s, pubfunct);
+
 	int seg = s->_segMan->getScriptSegment(script);
 	Script *scr = s->_segMan->getScriptIfLoaded(seg);
 
@@ -235,6 +286,7 @@ ExecStack *execute_method(EngineState *s, uint16 script, uint16 pubfunct, StackP
 						seg, make_reg32(seg, exportAddr), -1, -1, -1, pubfunct, -1,
 						s->_executionStack.size() - 1, EXEC_STACK_TYPE_CALL);
 	s->_executionStack.push_back(xstack);
+	//Z execute_method_hook_end(s, pubfunct);
 	return &(s->_executionStack.back());
 }
 
@@ -602,6 +654,8 @@ void run_vm(EngineState *s) {
 #endif
 
 	while (1) {
+		vm_hook_before_exec(s, NULL, opparams, local_script);	// get rid of NULL
+
 		int var_type; // See description below
 		int var_number;
 
@@ -677,6 +731,7 @@ void run_vm(EngineState *s) {
 
 		prevOpcode = opcode;
 #endif
+
 
 		switch (opcode) {
 
@@ -1430,6 +1485,67 @@ void run_vm(EngineState *s) {
 		++s->scriptStepCounter;
 	}
 }
+
+// stack. is it useful? PRINT_REG(s->xs->sp[0]));
+void qfg1_hook_blah_blah(Sci::EngineState *s) {
+	uint32 return_value = s->r_acc.getOffset();		// I'm assuming the segment is irrelevant
+	warning("Here I'm. return value: %x", return_value);
+
+	if (return_value == 0) {
+		warning("prepare to die!");
+		// reference of dying, from main.sc, proc0_29:
+		// 			(proc0_1 0 59 80 {Death from Overwork} 82 800 1 4)
+		PUSH(8);	//params count
+		PUSH(0);
+		PUSH(59);
+		PUSH(50);
+
+		// that's wrong!!! temp replacement for
+		//		lofsa    {Death from Overwork}
+		//		push
+		// hope that it'll work...
+		PUSH32(s->xs->addr.pc);
+
+		PUSH(82);
+		PUSH(800);
+		PUSH(1);
+		PUSH(4);
+
+		// based on 'case op_calle' above, assuming s->r_rest is zero (or, at least, irrelevant)
+		int framesize = 16;
+		int temp = ((framesize >> 1) + 0 + 1);
+		StackPtr s_temp = s->xs->sp;
+		s->xs->sp -= temp;
+
+		ExecStack *xs_new = execute_method(s, 0, 1, s_temp, s->xs->objp, s->xs->sp[0].getOffset(), s->xs->sp);
+		if (xs_new) { // in case of error, keep old stack
+			s->_executionStackPosChanged = true;
+			s->xs = xs_new;
+		};
+	};
+
+}
+//ExecStack *execute_method(EngineState *s, uint16 script, uint16 pubfunct, StackPtr sp, reg_t calling_obj, uint16 argc, StackPtr argp) {
+
+void vm_hook_before_exec(Sci::EngineState *s, const byte &opcode, int16  opparams[4], Script *local_script) {
+	//will be from table:
+	const char patchOpcodeName[] = "push0";
+	// not working now, TODO fix: void func(Sci::EngineState *s) = qfg1_hook_blah_blah;
+	//\
+
+	if (hook_exec_match(s, 58, "egoRuns", "changeState", 0x0018, 0x144d)) {
+		//TODO: return opcode comparison, it's nice...
+		//if (strcmp(patchOpcodeName, opcodeNames[opcode])) {
+		//	warning("opcode problem, TODO - elaborate, bug report, details, blah blah");
+		//} else {
+			qfg1_hook_blah_blah(s);
+			//TODO fix func(s);
+		//}
+		//debug("%s: %d, %d, %d, %d, pc = %04x:%04x, local script %d", opcodeNames[opcode], opparams[0], opparams[1], opparams[2], opparams[3], s->xs->addr.pc.getSegment(), g_sci->_debugState.old_pc_offset, local_script->getScriptNumber());
+	}
+}
+
+
 
 reg_t *ObjVarRef::getPointer(SegManager *segMan) const {
 	Object *o = segMan->getObject(obj);
