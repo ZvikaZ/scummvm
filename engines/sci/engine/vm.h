@@ -370,7 +370,9 @@ ExecStack *send_selector(EngineState *s, reg_t send_obj, reg_t work_obj,
  */
 void run_vm(EngineState *s);
 
-void vm_hook_before_exec(Sci::EngineState *s, const byte &opcode, int16  opparams[4], Script *local_script);
+
+// TODO - document
+void vm_hook_before_exec(Sci::EngineState *s, int16  opparams[4], Script *local_script);
 
 /**
  * Debugger functionality

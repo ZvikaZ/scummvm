@@ -602,7 +602,7 @@ void run_vm(EngineState *s) {
 #endif
 
 	while (1) {
-		vm_hook_before_exec(s, NULL, opparams, local_script);	// get rid of NULL
+		vm_hook_before_exec(s, opparams, local_script);
 
 		int var_type; // See description below
 		int var_number;
@@ -1483,6 +1483,7 @@ void qfg1_hook_blah_blah(Sci::EngineState *s) {
 
 }
 
+// simplify this - replace call.pc with s->xs->pc (or something) will fix the other bug...
 bool hook_exec_match(Sci::EngineState *s, int patchScriptNumber, const char *patchObjName, Common::String patchSelector, SegmentId patchSegment, uint32 patchOffset) {
 	const ExecStack call = s->_executionStack.back();
 	if (call.type != EXEC_STACK_TYPE_CALL)
@@ -1502,20 +1503,21 @@ bool hook_exec_match(Sci::EngineState *s, int patchScriptNumber, const char *pat
 }
 
 
-void vm_hook_before_exec(Sci::EngineState *s, const byte &opcode, int16  opparams[4], Script *local_script) {
+void vm_hook_before_exec(Sci::EngineState *s, int16  opparams[4], Script *local_script) {
 	//will be from table:
-	const char patchOpcodeName[] = "push0";
+	const char patchOpcodeName[] = "push0";   // "callb"   - push0 is good for testing, then return to callb... --no! there is a mistake here - it should work *before push0* why is it even working (is it??) - check with SVM in-game debugger - where exactly is this called (add printing here)
 	// not working now, TODO fix: void func(Sci::EngineState *s) = qfg1_hook_blah_blah;
 	//\
 
+
 	if (hook_exec_match(s, 58, "egoRuns", "changeState", 0x0018, 0x144d)) {
-		//TODO: return opcode comparison, it's nice...
-		//if (strcmp(patchOpcodeName, opcodeNames[opcode])) {
-		//	warning("opcode problem, TODO - elaborate, bug report, details, blah blah");
-		//} else {
+		byte opcode = (local_script->getBuf(s->xs->addr.pc.getOffset())[0]) >> 1;
+		if (strcmp(patchOpcodeName, opcodeNames[opcode])) {
+			warning("vm_hook_before_exec: opcode mismatch, ignoring.\n*** Please report to bugs.scummvm.com ***\nscript: %d, object: %s, selector: %s, PC: %4x:%4x, expected opcode: %s, actual opcode: %s", 58, "egoRuns", "changeState", PRINT_REG(s->xs->addr.pc), patchOpcodeName, opcodeNames[opcode]);
+		} else {
 			qfg1_hook_blah_blah(s);
 			//TODO fix func(s);
-		//}
+		}
 	}
 }
 
