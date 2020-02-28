@@ -602,7 +602,7 @@ void run_vm(EngineState *s) {
 #endif
 
 	while (1) {
-		vm_hook_before_exec(s, opparams, local_script);
+		vm_hook_before_exec(s);
 
 		int var_type; // See description below
 		int var_number;
@@ -1483,35 +1483,45 @@ void qfg1_hook_blah_blah(Sci::EngineState *s) {
 
 }
 
-// simplify this - replace call.pc with s->xs->pc (or something) will fix the other bug...
+// TODO: get rid of 'call' ?
 bool hook_exec_match(Sci::EngineState *s, int patchScriptNumber, const char *patchObjName, Common::String patchSelector, SegmentId patchSegment, uint32 patchOffset) {
 	const ExecStack call = s->_executionStack.back();
 	if (call.type != EXEC_STACK_TYPE_CALL)
 		return false;
 
-	int scriptNumber = s->_segMan->getScript(call.addr.pc.getSegment())->getScriptNumber();
+	int scriptNumber = s->_segMan->getScript(s->xs->addr.pc.getSegment())->getScriptNumber();
 	const char *objName = s->_segMan->getObjectName(call.sendp);
 	Common::String selector = nullptr;
 	if (call.debugSelector != -1)
 		selector = g_sci->getKernel()->getSelectorName(call.debugSelector);
 
 	SegmentId segment = s->xs->addr.pc.getSegment();
-	uint32 offset = g_sci->_debugState.old_pc_offset;
+	uint32 offset = s->xs->addr.pc.getOffset();
 
 	return scriptNumber == patchScriptNumber && strcmp(objName, patchObjName) == 0 && selector == patchSelector &&
 		segment == patchSegment && offset == patchOffset;
 }
 
 
-void vm_hook_before_exec(Sci::EngineState *s, int16  opparams[4], Script *local_script) {
+void vm_hook_before_exec(Sci::EngineState *s) {
 	//will be from table:
-	const char patchOpcodeName[] = "push0";   // "callb"   - push0 is good for testing, then return to callb... --no! there is a mistake here - it should work *before push0* why is it even working (is it??) - check with SVM in-game debugger - where exactly is this called (add printing here)
+	const char patchOpcodeName[] = "push0";
+
 	// not working now, TODO fix: void func(Sci::EngineState *s) = qfg1_hook_blah_blah;
-	//\
+	//
+	// 
+
+	// TODO: make this work, just to be 100% safe
+	int scriptNumber = s->_segMan->getScript(s->xs->addr.pc.getSegment())->getScriptNumber();
+	Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
+	byte opcode = (scr->getBuf(s->xs->addr.pc.getOffset())[0]) >> 1;
+	if (s->xs->addr.pc.getSegment() == 0x18 && s->xs->addr.pc.getOffset() >= 0x122c && s->xs->addr.pc.getOffset() <= 0x1463)
+		warning("script: %d, pc:%4x, opcode:%s", scriptNumber, s->xs->addr.pc.getOffset(), opcodeNames[opcode]);
 
 
 	if (hook_exec_match(s, 58, "egoRuns", "changeState", 0x0018, 0x144d)) {
-		byte opcode = (local_script->getBuf(s->xs->addr.pc.getOffset())[0]) >> 1;
+		Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
+		byte opcode = (scr->getBuf(s->xs->addr.pc.getOffset())[0]) >> 1;
 		if (strcmp(patchOpcodeName, opcodeNames[opcode])) {
 			warning("vm_hook_before_exec: opcode mismatch, ignoring.\n*** Please report to bugs.scummvm.com ***\nscript: %d, object: %s, selector: %s, PC: %4x:%4x, expected opcode: %s, actual opcode: %s", 58, "egoRuns", "changeState", PRINT_REG(s->xs->addr.pc), patchOpcodeName, opcodeNames[opcode]);
 		} else {

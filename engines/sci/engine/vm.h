@@ -372,7 +372,7 @@ void run_vm(EngineState *s);
 
 
 // TODO - document
-void vm_hook_before_exec(Sci::EngineState *s, int16  opparams[4], Script *local_script);
+void vm_hook_before_exec(Sci::EngineState *s);
 
 /**
  * Debugger functionality
