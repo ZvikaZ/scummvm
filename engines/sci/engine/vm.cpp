@@ -1434,22 +1434,20 @@ void run_vm(EngineState *s) {
 }
 
 // TODO:
-// need to improve a lot of things, few that I rememeber :
-// - return opcode checking mechanism
-// - debug message for patch
-// - check the PUSH32 in the middle
-// - try to simplify 'match' method
-// - replace 'blah's...
+// - better doc to the patch, and references
 // - move hooks to new file
 // - make a table per game, load specific game, verify against table
 // - make function call from table
+// - debug prints
+// - check the PUSH32 in the middle
+// - check other similar problems? maybe fix at the health-decrease-export-function?
+// - fix QFG1VGA
 
-void qfg1_hook_blah_blah(Sci::EngineState *s) {
+
+void qfg1_die_after_running_on_ice(Sci::EngineState *s) {
 	uint32 return_value = s->r_acc.getOffset();		// I'm assuming the segment is irrelevant
-	warning("Here I'm. return value: %x", return_value);
 
 	if (return_value == 0) {
-		warning("prepare to die!");
 		// reference of dying, from main.sc, proc0_29:
 		// 			(proc0_1 0 59 80 {Death from Overwork} 82 800 1 4)
 		PUSH(8);	//params count
@@ -1483,17 +1481,12 @@ void qfg1_hook_blah_blah(Sci::EngineState *s) {
 
 }
 
-// TODO: get rid of 'call' ?
 bool hook_exec_match(Sci::EngineState *s, int patchScriptNumber, const char *patchObjName, Common::String patchSelector, SegmentId patchSegment, uint32 patchOffset) {
-	const ExecStack call = s->_executionStack.back();
-	if (call.type != EXEC_STACK_TYPE_CALL)
-		return false;
-
 	int scriptNumber = s->_segMan->getScript(s->xs->addr.pc.getSegment())->getScriptNumber();
-	const char *objName = s->_segMan->getObjectName(call.sendp);
+	const char *objName = s->_segMan->getObjectName(s->xs->objp);
 	Common::String selector = nullptr;
-	if (call.debugSelector != -1)
-		selector = g_sci->getKernel()->getSelectorName(call.debugSelector);
+	if (s->xs->debugSelector != -1)
+		selector = g_sci->getKernel()->getSelectorName(s->xs->debugSelector);
 
 	SegmentId segment = s->xs->addr.pc.getSegment();
 	uint32 offset = s->xs->addr.pc.getOffset();
@@ -1507,17 +1500,9 @@ void vm_hook_before_exec(Sci::EngineState *s) {
 	//will be from table:
 	const char patchOpcodeName[] = "push0";
 
-	// not working now, TODO fix: void func(Sci::EngineState *s) = qfg1_hook_blah_blah;
+	// not working now, TODO fix: void func(Sci::EngineState *s) = qfg1_die_after_running_on_ice;
 	//
 	// 
-
-	// TODO: make this work, just to be 100% safe
-	int scriptNumber = s->_segMan->getScript(s->xs->addr.pc.getSegment())->getScriptNumber();
-	Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
-	byte opcode = (scr->getBuf(s->xs->addr.pc.getOffset())[0]) >> 1;
-	if (s->xs->addr.pc.getSegment() == 0x18 && s->xs->addr.pc.getOffset() >= 0x122c && s->xs->addr.pc.getOffset() <= 0x1463)
-		warning("script: %d, pc:%4x, opcode:%s", scriptNumber, s->xs->addr.pc.getOffset(), opcodeNames[opcode]);
-
 
 	if (hook_exec_match(s, 58, "egoRuns", "changeState", 0x0018, 0x144d)) {
 		Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
@@ -1525,7 +1510,8 @@ void vm_hook_before_exec(Sci::EngineState *s) {
 		if (strcmp(patchOpcodeName, opcodeNames[opcode])) {
 			warning("vm_hook_before_exec: opcode mismatch, ignoring.\n*** Please report to bugs.scummvm.com ***\nscript: %d, object: %s, selector: %s, PC: %4x:%4x, expected opcode: %s, actual opcode: %s", 58, "egoRuns", "changeState", PRINT_REG(s->xs->addr.pc), patchOpcodeName, opcodeNames[opcode]);
 		} else {
-			qfg1_hook_blah_blah(s);
+			qfg1_die_after_running_on_ice(s);
+			//TODO debug message patching
 			//TODO fix func(s);
 		}
 	}
