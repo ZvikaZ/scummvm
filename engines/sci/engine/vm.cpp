@@ -1434,26 +1434,37 @@ void run_vm(EngineState *s) {
 }
 
 // TODO:
-// - better doc to the patch, and references
 // - move hooks to new file
-// - make a table per game, load specific game, verify against table
+// - make a table per game, load specific game, verify against table - use common/hashmap
 // - make function call from table
+// - hook extern example
 // - debug prints
 // - check the PUSH32 in the middle
+// - check the 50/80 in the middle
 // - check other similar problems? maybe fix at the health-decrease-export-function?
 // - fix QFG1VGA
 
 
+// solves the issue described at #9646:
+// "
+// When in room 58, and type "run", the hero will fall and his HP will decrease by 1 point. This can be repeated, but will never cause the hero to die.
+// When typing "run" the ego will be assigned with the script egoRuns.
+// egoRuns::changeState calls proc0_36 in script 0 which is deducing damage from the hero's HP.
+// This procedure returns TRUE if the hero is still alive, but the return value is never observed in egoRuns.
+// "
+// we solve that by calling the hook before executing the opcode following proc0_36 call
+// and check the return value. if the hero should die, we kill him
 void qfg1_die_after_running_on_ice(Sci::EngineState *s) {
 	uint32 return_value = s->r_acc.getOffset();		// I'm assuming the segment is irrelevant
 
 	if (return_value == 0) {
-		// reference of dying, from main.sc, proc0_29:
+		// 0 mean that the hero should die
+		// done according to the code at main.sc, proc0_29:
 		// 			(proc0_1 0 59 80 {Death from Overwork} 82 800 1 4)
-		PUSH(8);	//params count
-		PUSH(0);
-		PUSH(59);
-		PUSH(50);
+		PUSH(8);	// params count
+		PUSH(0);	// script 0
+		PUSH(59);	// extern 59
+		PUSH(50);	// TODO: 50 or 80? maybe 0x50???....
 
 		// that's wrong!!! temp replacement for
 		//		lofsa    {Death from Overwork}
@@ -1466,7 +1477,7 @@ void qfg1_die_after_running_on_ice(Sci::EngineState *s) {
 		PUSH(1);
 		PUSH(4);
 
-		// based on 'case op_calle' above, assuming s->r_rest is zero (or, at least, irrelevant)
+		// CALLE implementation, based on 'case op_calle' above, assuming s->r_rest is zero (or, at least, irrelevant)
 		int framesize = 16;
 		int temp = ((framesize >> 1) + 0 + 1);
 		StackPtr s_temp = s->xs->sp;
