@@ -370,10 +370,6 @@ ExecStack *send_selector(EngineState *s, reg_t send_obj, reg_t work_obj,
  */
 void run_vm(EngineState *s);
 
-
-// TODO - document
-void vm_hook_before_exec(Sci::EngineState *s);
-
 /**
  * Debugger functionality
  * @param[in] s					The state at which debugging should take place
@@ -430,6 +426,18 @@ int readPMachineInstruction(const byte *src, byte &extOpcode, int16 opparams[4])
  *                     SCI3
  */
 uint32 findOffset(const int16 relOffset, const Script *scr, const uint32 pcOffset);
+
+
+StackPtr validate_stack_addr(EngineState *s, StackPtr sp);
+
+
+// Operating on the stack
+// 16 bit:
+#define PUSH(v) PUSH32(make_reg(0, v))
+// 32 bit:
+#define PUSH32(a) (*(validate_stack_addr(s, (s->xs->sp)++)) = (a))
+#define POP32() (*(validate_stack_addr(s, --(s->xs->sp))))
+
 
 } // End of namespace Sci
 
