@@ -48,10 +48,8 @@ uint64 HookHashKey::hash() {
 }
 
 // TODO:
-// - debug prints
-// - check the PUSH32 in the middle
-// - check the 50/80 in the middle
 // - check on Linux
+// - debug prints
 // - document new code in vm.h, and all vm_hooks code
 // - check with 'gitk 07df6cc254' if needs more changes
 // - fix QFG1VGA
@@ -78,12 +76,14 @@ void qfg1_die_after_running_on_ice(Sci::EngineState *s) {
 		PUSH(8);	// params count
 		PUSH(0);	// script 0
 		PUSH(59);	// extern 59
-		PUSH(50);	// TODO: 50 or 80? maybe 0x50???....
 
-		// that's wrong!!! temp replacement for
-		//		lofsa    {Death from Overwork}
-		//		push
-		// hope that it'll work...
+		// the following commands should be:
+		// pushi    80
+		// lofsa{ Death from Overwork }
+		// push
+		//
+		// I didn't bother with finding a string address, and the following 2 commands just ignore the string:
+		PUSH(0);
 		PUSH32(s->xs->addr.pc);
 
 		PUSH(82);
