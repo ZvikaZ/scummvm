@@ -37,7 +37,7 @@ static const GeneralHookEntry allGamesHooks[] = {
 
 
 VmHooks::VmHooks() {
-	for (int i = 0; i < sizeof(allGamesHooks); i++) {
+	for (uint i = 0; i < sizeof(allGamesHooks); i++) {
 		if (allGamesHooks[i].gameId == g_sci->getGameId())		//TODO and specific version
 			_hooksMap.setVal(allGamesHooks[i].key, allGamesHooks[i].entry);
 	}
@@ -48,10 +48,7 @@ uint64 HookHashKey::hash() {
 }
 
 // TODO:
-// - check on Linux
-// - debug prints
 // - document new code in vm.h, and all vm_hooks code
-// - check with 'gitk 07df6cc254' if needs more changes
 // - fix QFG1VGA
 // - check difference between GK1 CD/floppy
 // - fix spacing, e.g., HookEntry val = { 58,
@@ -108,7 +105,7 @@ void qfg1_die_after_running_on_ice(Sci::EngineState *s) {
 // just an example of modifying an extern function
 void qfg1_extern_example(Sci::EngineState *s) {
 	if (s->r_acc.getOffset() == 0) {
-//		debug("0_36 has decided that you're going to die");
+		debugC(kDebugLevelPatcher, "0_36 has decided that you're going to die");
 	}
 }
 
@@ -131,7 +128,10 @@ void VmHooks::vm_hook_before_exec(Sci::EngineState *s) {
 	if (_hooksMap.contains(key)) {
 		HookEntry entry = _hooksMap[key];
 		if (hook_exec_match(s, entry)) {
+			debugC(kDebugLevelPatcher, "vm_hook: patching script: %d, PC: %04x:%04x, obj: %s, selector: %s, extern: %d, opcode: %s", entry.scriptNumber, PRINT_REG(s->xs->addr.pc), entry.objName, entry.selector.c_str(), entry.exportId, entry.opcodeName);
 			entry.func(s);
+		} else {
+			debugC(kDebugLevelPatcher, "vm_hook: failed to match! script: %d, PC: %04x:%04x, obj: %s, selector: %s, extern: %d, opcode: %s", entry.scriptNumber, PRINT_REG(s->xs->addr.pc), entry.objName, entry.selector.c_str(), entry.exportId, entry.opcodeName);
 		}
 	}
 }
