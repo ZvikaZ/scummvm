@@ -572,6 +572,8 @@ void run_vm(EngineState *s) {
 	StackPtr s_temp; // Temporary stack pointer
 	int16 opparams[4]; // opcode parameters
 
+	VmHooks vmHooks;
+
 	s->r_rest = 0;	// &rest adjusts the parameter count by this value
 	// Current execution data:
 	s->xs = &(s->_executionStack.back());
@@ -597,7 +599,7 @@ void run_vm(EngineState *s) {
 #endif
 
 	while (1) {
-		vm_hook_before_exec(s);
+		vmHooks.vm_hook_before_exec(s);
 
 		int var_type; // See description below
 		int var_number;

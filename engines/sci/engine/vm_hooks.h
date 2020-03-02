@@ -28,8 +28,41 @@
 namespace Sci {
 
 
- // TODO - document
-void vm_hook_before_exec(Sci::EngineState *s);
+
+struct HookHashKey {
+	SegmentId segment;
+	uint32 offset;
+
+	uint64 hash();
+
+	bool operator==(const HookHashKey &other) const {
+		return segment == other.segment && offset == other.offset;
+	}
+
+
+};
+
+struct HookEntry {
+	int scriptNumber;
+	const char *objName;
+	Common::String selector;
+	const char *opcodeName;
+};
+
+struct HookHash : public Common::UnaryFunction<HookHashKey, uint64> {
+	uint64 operator()(HookHashKey val) const { return val.hash(); }
+};
+
+class VmHooks {
+public:
+	VmHooks();
+
+	// TODO - document
+	void vm_hook_before_exec(Sci::EngineState *s);
+
+	Common::HashMap<HookHashKey, HookEntry, HookHash> _hooksMap;
+};
+
 
 } // End of namespace Sci
 

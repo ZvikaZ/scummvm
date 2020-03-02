@@ -20,6 +20,7 @@
  *
  */
 
+#include "common/hashmap.h"
 #include "sci/engine/vm_hooks.h"
 #include "sci/engine/vm.h"
 #include "sci/engine/state.h"
@@ -27,6 +28,18 @@
 #include "sci/engine/scriptdebug.h"
 
 namespace Sci {
+
+
+VmHooks::VmHooks() {
+	// TODO - build from table
+	HookHashKey key = {0x0018, 0x144d};
+	HookEntry val = {58, "egoRuns", "changeState", "push0"};
+	_hooksMap.setVal(key, val);
+}
+
+uint64 HookHashKey::hash() {
+	return ((uint64)segment << 32) + offset;
+}
 
 // TODO:
 // - make a table per game, load specific game, verify against table - use common/hashmap
@@ -89,38 +102,26 @@ void qfg1_die_after_running_on_ice(Sci::EngineState *s) {
 
 }
 
-bool hook_exec_match(Sci::EngineState *s, int patchScriptNumber, const char *patchObjName, Common::String patchSelector, SegmentId patchSegment, uint32 patchOffset) {
-	int scriptNumber = s->_segMan->getScript(s->xs->addr.pc.getSegment())->getScriptNumber();
+bool hook_exec_match(Sci::EngineState *s, int patchScriptNumber, const char *patchObjName, Common::String patchSelector, const char *patchOpcodeName) {
+	Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
+	int scriptNumber = scr->getScriptNumber();
 	const char *objName = s->_segMan->getObjectName(s->xs->objp);
 	Common::String selector = nullptr;
 	if (s->xs->debugSelector != -1)
 		selector = g_sci->getKernel()->getSelectorName(s->xs->debugSelector);
+	byte opcode = (scr->getBuf(s->xs->addr.pc.getOffset())[0]) >> 1;
 
-	SegmentId segment = s->xs->addr.pc.getSegment();
-	uint32 offset = s->xs->addr.pc.getOffset();
-
-	return scriptNumber == patchScriptNumber && strcmp(objName, patchObjName) == 0 && selector == patchSelector &&
-		segment == patchSegment && offset == patchOffset;
+	return scriptNumber == patchScriptNumber && strcmp(objName, patchObjName) == 0 && selector == patchSelector && strcmp(patchOpcodeName, opcodeNames[opcode]) == 0;
 }
 
 
-void vm_hook_before_exec(Sci::EngineState *s) {
-	//will be from table:
-	const char patchOpcodeName[] = "push0";
-
-	// not working now, TODO fix: void func(Sci::EngineState *s) = qfg1_die_after_running_on_ice;
-	//
-	// 
-
-	if (hook_exec_match(s, 58, "egoRuns", "changeState", 0x0018, 0x144d)) {
-		Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
-		byte opcode = (scr->getBuf(s->xs->addr.pc.getOffset())[0]) >> 1;
-		if (strcmp(patchOpcodeName, opcodeNames[opcode])) {
-			warning("vm_hook_before_exec: opcode mismatch, ignoring.\n*** Please report to bugs.scummvm.com ***\nscript: %d, object: %s, selector: %s, PC: %4x:%4x, expected opcode: %s, actual opcode: %s", 58, "egoRuns", "changeState", PRINT_REG(s->xs->addr.pc), patchOpcodeName, opcodeNames[opcode]);
-		} else {
+void VmHooks::vm_hook_before_exec(Sci::EngineState *s) {
+	HookHashKey key = { s->xs->addr.pc.getSegment(), s->xs->addr.pc.getOffset() };
+	if (_hooksMap.contains(key)) {
+		HookEntry entry = _hooksMap[key];
+		if (hook_exec_match(s, entry.scriptNumber, entry.objName, entry.selector, entry.opcodeName)) {
 			qfg1_die_after_running_on_ice(s);
-			//TODO debug message patching
-			//TODO fix func(s);
+			// not working now, TODO fix: void func(Sci::EngineState *s) = qfg1_die_after_running_on_ice;
 		}
 	}
 }
