@@ -27,6 +27,9 @@
 
 namespace Sci {
 
+typedef	void (*HookFunction)(Sci::EngineState *);
+
+void qfg1_die_after_running_on_ice(Sci::EngineState *s);
 
 
 struct HookHashKey {
@@ -47,6 +50,7 @@ struct HookEntry {
 	const char *objName;
 	Common::String selector;
 	const char *opcodeName;
+	HookFunction func;
 };
 
 struct HookHash : public Common::UnaryFunction<HookHashKey, uint64> {
@@ -57,10 +61,12 @@ class VmHooks {
 public:
 	VmHooks();
 
-	// TODO - document
+	// TODO - document all
 	void vm_hook_before_exec(Sci::EngineState *s);
 
+private:
 	Common::HashMap<HookHashKey, HookEntry, HookHash> _hooksMap;
+
 };
 
 

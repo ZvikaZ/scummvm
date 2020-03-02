@@ -29,11 +29,10 @@
 
 namespace Sci {
 
-
 VmHooks::VmHooks() {
 	// TODO - build from table
 	HookHashKey key = {0x0018, 0x144d};
-	HookEntry val = {58, "egoRuns", "changeState", "push0"};
+	HookEntry val = { 58, "egoRuns", "changeState", "push0", &qfg1_die_after_running_on_ice }; 
 	_hooksMap.setVal(key, val);
 }
 
@@ -43,7 +42,6 @@ uint64 HookHashKey::hash() {
 
 // TODO:
 // - make a table per game, load specific game, verify against table - use common/hashmap
-// - make function call from table
 // - hook extern example
 // - debug prints
 // - check the PUSH32 in the middle
@@ -120,8 +118,7 @@ void VmHooks::vm_hook_before_exec(Sci::EngineState *s) {
 	if (_hooksMap.contains(key)) {
 		HookEntry entry = _hooksMap[key];
 		if (hook_exec_match(s, entry.scriptNumber, entry.objName, entry.selector, entry.opcodeName)) {
-			qfg1_die_after_running_on_ice(s);
-			// not working now, TODO fix: void func(Sci::EngineState *s) = qfg1_die_after_running_on_ice;
+			entry.func(s);
 		}
 	}
 }
