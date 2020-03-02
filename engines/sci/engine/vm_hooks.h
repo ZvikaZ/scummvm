@@ -30,6 +30,7 @@ namespace Sci {
 typedef	void (*HookFunction)(Sci::EngineState *);
 
 void qfg1_die_after_running_on_ice(Sci::EngineState *s);
+void qfg1_extern_example(Sci::EngineState *s);
 
 
 struct HookHashKey {
@@ -49,6 +50,7 @@ struct HookEntry {
 	int scriptNumber;
 	const char *objName;
 	Common::String selector;
+	int exportId;
 	const char *opcodeName;
 	HookFunction func;
 };

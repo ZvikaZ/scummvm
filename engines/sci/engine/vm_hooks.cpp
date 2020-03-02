@@ -30,8 +30,9 @@
 namespace Sci {
 
 static const GeneralHookEntry allGamesHooks[] = {
-	// GID	 ,  PC.seg, PC.offset, script, objName, selector,	opcode,	  function
-	{GID_QFG1, {0x0018, 0x144d}, { 58, "egoRuns", "changeState", "push0", &qfg1_die_after_running_on_ice } }
+	// GID	 ,  PC.seg, PC.offset, script, objName, selector, exterID, opcode, function
+	{GID_QFG1, {0x0018, 0x144d}, {58, "egoRuns", "changeState", -1 , "push0", &qfg1_die_after_running_on_ice}},
+	{GID_QFG1, {0x0001, 0x199e}, {0 , "egoRuns", ""           , 36 , "ret",   &qfg1_extern_example}}
 };
 
 
@@ -47,11 +48,9 @@ uint64 HookHashKey::hash() {
 }
 
 // TODO:
-// - hook extern example
 // - debug prints
 // - check the PUSH32 in the middle
 // - check the 50/80 in the middle
-// - check other similar problems? maybe fix at the health-decrease-export-function?
 // - check on Linux
 // - document new code in vm.h, and all vm_hooks code
 // - check with 'gitk 07df6cc254' if needs more changes
@@ -104,10 +103,16 @@ void qfg1_die_after_running_on_ice(Sci::EngineState *s) {
 			s->xs = xs_new;
 		};
 	};
-
 }
 
-bool hook_exec_match(Sci::EngineState *s, int patchScriptNumber, const char *patchObjName, Common::String patchSelector, const char *patchOpcodeName) {
+// just an example of modifying an extern function
+void qfg1_extern_example(Sci::EngineState *s) {
+	if (s->r_acc.getOffset() == 0) {
+//		debug("0_36 has decided that you're going to die");
+	}
+}
+
+bool hook_exec_match(Sci::EngineState *s, HookEntry entry) {
 	Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
 	int scriptNumber = scr->getScriptNumber();
 	const char *objName = s->_segMan->getObjectName(s->xs->objp);
@@ -116,7 +121,8 @@ bool hook_exec_match(Sci::EngineState *s, int patchScriptNumber, const char *pat
 		selector = g_sci->getKernel()->getSelectorName(s->xs->debugSelector);
 	byte opcode = (scr->getBuf(s->xs->addr.pc.getOffset())[0]) >> 1;
 
-	return scriptNumber == patchScriptNumber && strcmp(objName, patchObjName) == 0 && selector == patchSelector && strcmp(patchOpcodeName, opcodeNames[opcode]) == 0;
+	return scriptNumber == entry.scriptNumber && strcmp(objName, entry.objName) == 0 && selector == entry.selector &&
+		s->xs->debugExportId == entry.exportId && strcmp(entry.opcodeName, opcodeNames[opcode]) == 0;
 }
 
 
@@ -124,7 +130,7 @@ void VmHooks::vm_hook_before_exec(Sci::EngineState *s) {
 	HookHashKey key = { s->xs->addr.pc.getSegment(), s->xs->addr.pc.getOffset() };
 	if (_hooksMap.contains(key)) {
 		HookEntry entry = _hooksMap[key];
-		if (hook_exec_match(s, entry.scriptNumber, entry.objName, entry.selector, entry.opcodeName)) {
+		if (hook_exec_match(s, entry)) {
 			entry.func(s);
 		}
 	}
