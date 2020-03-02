@@ -29,11 +29,17 @@
 
 namespace Sci {
 
+static const GeneralHookEntry allGamesHooks[] = {
+	// GID	 ,  PC.seg, PC.offset, script, objName, selector,	opcode,	  function
+	{GID_QFG1, {0x0018, 0x144d}, { 58, "egoRuns", "changeState", "push0", &qfg1_die_after_running_on_ice } }
+};
+
+
 VmHooks::VmHooks() {
-	// TODO - build from table
-	HookHashKey key = {0x0018, 0x144d};
-	HookEntry val = { 58, "egoRuns", "changeState", "push0", &qfg1_die_after_running_on_ice }; 
-	_hooksMap.setVal(key, val);
+	for (int i = 0; i < sizeof(allGamesHooks); i++) {
+		if (allGamesHooks[i].gameId == g_sci->getGameId())		//TODO and specific version
+			_hooksMap.setVal(allGamesHooks[i].key, allGamesHooks[i].entry);
+	}
 }
 
 uint64 HookHashKey::hash() {
@@ -41,16 +47,17 @@ uint64 HookHashKey::hash() {
 }
 
 // TODO:
-// - make a table per game, load specific game, verify against table - use common/hashmap
 // - hook extern example
 // - debug prints
 // - check the PUSH32 in the middle
 // - check the 50/80 in the middle
 // - check other similar problems? maybe fix at the health-decrease-export-function?
-// - document new code in vm.h, and all vm_hooks code
 // - check on Linux
+// - document new code in vm.h, and all vm_hooks code
 // - check with 'gitk 07df6cc254' if needs more changes
 // - fix QFG1VGA
+// - check difference between GK1 CD/floppy
+// - fix spacing, e.g., HookEntry val = { 58,
 
 
 // solves the issue described at #9646:

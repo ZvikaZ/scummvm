@@ -53,6 +53,13 @@ struct HookEntry {
 	HookFunction func;
 };
 
+struct GeneralHookEntry {
+	SciGameId gameId;
+	HookHashKey key;
+	HookEntry entry;
+};
+
+
 struct HookHash : public Common::UnaryFunction<HookHashKey, uint64> {
 	uint64 operator()(HookHashKey val) const { return val.hash(); }
 };
