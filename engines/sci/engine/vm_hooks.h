@@ -27,12 +27,15 @@
 
 namespace Sci {
 
-typedef	void (*HookFunction)(Sci::EngineState *);
 
+/** Hook functions to call upon match */
 void qfg1_die_after_running_on_ice(Sci::EngineState *s);
 void qfg1_extern_example(Sci::EngineState *s);
 
+/** Hook function type, to be called upon match */
+typedef	void (*HookFunction)(Sci::EngineState *);
 
+/** _hooksMap keys are built from PC's segment and offset */
 struct HookHashKey {
 	SegmentId segment;
 	uint32 offset;
@@ -46,36 +49,42 @@ struct HookHashKey {
 
 };
 
+/** _hooksMap value entry */
 struct HookEntry {
+	/** These are used to make sure that the PC is indeed the requested place */
 	int scriptNumber;
 	const char *objName;
 	Common::String selector;
 	int exportId;
 	const char *opcodeName;
+
+	/** If all the previous match, call func */
 	HookFunction func;
 };
 
+/** Used for allGamesHooks - from it we build the specific _hooksMap */
 struct GeneralHookEntry {
 	SciGameId gameId;
 	HookHashKey key;
 	HookEntry entry;
 };
 
-
+/** Hash key equality function */
 struct HookHash : public Common::UnaryFunction<HookHashKey, uint64> {
 	uint64 operator()(HookHashKey val) const { return val.hash(); }
 };
 
+/** VM Hook mechanism */
 class VmHooks {
 public:
 	VmHooks();
 
-	// TODO - document all
+	/** Called just before executing opcode, to check if there is a requried hook */
 	void vm_hook_before_exec(Sci::EngineState *s);
 
 private:
+	/** Hash map of all game's hooks */
 	Common::HashMap<HookHashKey, HookEntry, HookHash> _hooksMap;
-
 };
 
 

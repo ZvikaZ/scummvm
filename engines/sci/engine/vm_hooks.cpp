@@ -29,16 +29,25 @@
 
 namespace Sci {
 
+/** Write here all games hooks
+ *  From this we'll build _hooksMap, which contains only relevant hooks to current game
+ *  The match is performed according to PC, script number, objName, opcode (only opcode name, as seen in ScummVM debugger),
+ *  and either:
+ *  - selector	(and then externID is -1)
+ *  - external function ID (and then selector is "")
+ */
 static const GeneralHookEntry allGamesHooks[] = {
-	// GID	 ,  PC.seg, PC.offset, script, objName, selector, exterID, opcode, function
+	// GID	 ,  PC.seg, PC.offset, script, objName, selector, externID, opcode, function
 	{GID_QFG1, {0x0018, 0x144d}, {58, "egoRuns", "changeState", -1 , "push0", &qfg1_die_after_running_on_ice}},
+	// the following is example, can be removed when we'll have a concrete usage
 	{GID_QFG1, {0x0001, 0x199e}, {0 , "egoRuns", ""           , 36 , "ret",   &qfg1_extern_example}}
 };
 
 
 VmHooks::VmHooks() {
-	for (uint i = 0; i < sizeof(allGamesHooks); i++) {
-		if (allGamesHooks[i].gameId == g_sci->getGameId())		//TODO and specific version
+	// build _hooksMap
+	for (uint i = 0; i < sizeof(allGamesHooks) / sizeof(GeneralHookEntry); i++) {
+		if (allGamesHooks[i].gameId == g_sci->getGameId())		
 			_hooksMap.setVal(allGamesHooks[i].key, allGamesHooks[i].entry);
 	}
 }
@@ -46,12 +55,6 @@ VmHooks::VmHooks() {
 uint64 HookHashKey::hash() {
 	return ((uint64)segment << 32) + offset;
 }
-
-// TODO:
-// - document new code in vm.h, and all vm_hooks code
-// - fix QFG1VGA
-// - check difference between GK1 CD/floppy
-// - fix spacing, e.g., HookEntry val = { 58,
 
 
 // solves the issue described at #9646:
@@ -109,6 +112,7 @@ void qfg1_extern_example(Sci::EngineState *s) {
 	}
 }
 
+// returns true if entry is matching to current state
 bool hook_exec_match(Sci::EngineState *s, HookEntry entry) {
 	Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
 	int scriptNumber = scr->getScriptNumber();
