@@ -375,6 +375,8 @@ void TownsScreen::addDirtyRect(int x, int y, int w, int h) {
 	int x2 = x + w - 1;
 	int y2 = y + h - 1;
 
+	if (!(x >= 0 && y >= 0 && x2 <= _width && y2 <= _height))
+		warning("booh");	//TODO: remove me
 	assert(x >= 0 && y >= 0 && x2 <= _width && y2 <= _height);
 
 	bool skip = false;

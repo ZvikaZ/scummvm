@@ -1009,6 +1009,8 @@ void ScummEngine::saveLoadWithSerializer(Common::Serializer &s) {
 	s.syncAsSint16LE(camera._dest.y, VER(8));
 	s.syncAsSint16LE(camera._cur.x, VER(8));
 	s.syncAsSint16LE(camera._cur.y, VER(8));
+	//Z !!
+	camera._cur.y = _screenHeight / 2;  //Z TODO!
 	s.syncAsSint16LE(camera._last.x, VER(8));
 	s.syncAsSint16LE(camera._last.y, VER(8));
 	s.syncAsSint16LE(camera._accel.x, VER(8));
