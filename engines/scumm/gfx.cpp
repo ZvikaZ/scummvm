@@ -365,6 +365,7 @@ void ScummEngine::initScreens(int b, int h) {
 		initVirtScreen(kUnkVirtScreen, 0, _screenWidth, adj, false, false);
 	}
 
+	//Z TODO: make sure that it's working well for saved games
 	initVirtScreen(kMainVirtScreen, b + adj, _screenWidth, h - b, true, true);
 	initVirtScreen(kTextVirtScreen, adj, _screenWidth, b, false, false);
 	initVirtScreen(kVerbVirtScreen, h + adj, _screenWidth, _screenHeight - h - adj, false, false);
