@@ -78,6 +78,7 @@ class WriteStream;
  */
 namespace Scumm {
 
+
 class Actor;
 class BaseCostumeLoader;
 class BaseCostumeRenderer;

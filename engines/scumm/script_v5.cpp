@@ -2373,6 +2373,10 @@ void ScummEngine_v5::o5_verbOps() {
 					// WORKAROUND: FM-TOWNS Zak used the extra 40 pixels at the bottom to increase the inventory to 10 items
 					// if we trim to 200 pixels, we need to move the 'down arrow' (verb 116) to higher location
 					vs->curRect.top -= 18;
+				else if (_game.id == GID_LOOM && verb == 53)
+					// WORKAROUND: FM-TOWNS Loom, practice mode, prints the played notes in a box at the extra 40 pixels
+					// if we trim, we need to move it to higher location
+					vs->curRect.moveTo(vs->curRect.left, vs->curRect.top - 9);
 			}
 			break;
 		case 6:		// SO_VERB_ON
@@ -2625,6 +2629,17 @@ void ScummEngine_v5::decodeParseString() {
 			_string[textSlot].xpos = getVarOrDirectWord(PARAM_1);
 			_string[textSlot].ypos = getVarOrDirectWord(PARAM_2);
 			_string[textSlot].overhead = false;
+			if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_LOOM && ConfMan.getBool("trim_fmtowns_to_200_pixels")) {
+				//Z debug("decodeParseString. room: %d, ypos: %d", _currentRoom, _string[textSlot].ypos);	//Z TODO: del me
+				// WORKAROUND: FM-TOWNS Loom prints the inventory names (partially) in the extra 40 pixels
+				// if we trim, we need to move it to higher location
+				if (_string[textSlot].ypos == 198)
+					_string[textSlot].ypos -= 40;
+				// WORKAROUND: FM-TOWNS Loom, practice mode, prints the played notes in the extra 40 pixels
+				// if we trim, we need to move it to higher location
+				else if (_string[textSlot].ypos == 196)
+					_string[textSlot].ypos -= 9;
+			}
 			break;
 		case 1:		// SO_COLOR
 			_string[textSlot].color = getVarOrDirectByte(PARAM_1);
@@ -2684,7 +2699,34 @@ void ScummEngine_v5::decodeParseString() {
 		case 15:{	// SO_TEXTSTRING
 				const int len = resStrLen(_scriptPointer);
 
-				if (_game.id == GID_LOOM && strcmp((const char *) _scriptPointer, "I am Choas.") == 0) {
+				// /*
+				if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_LOOM && ConfMan.getBool("trim_fmtowns_to_200_pixels") &&
+					 _currentRoom == 64 && _string[textSlot].xpos == 160 && _string[textSlot].ypos == 144) { 
+						// WORKAROUND: FM-TOWNS Loom prints a lot of text in Cygna's grave (room 64), that goes to the extra 40 pixels
+						// if we trim, we need to move it to higher location, and add newlines in the middle of the strings
+						// (in order to make it print on empty spaces)
+						_string[0].ypos = 3;
+						_string[0].xpos = 3;
+						_string[0].center = false;
+
+						// copy, and add newlines in the middle
+						byte tmpBuf[512];
+						int numOfNewLines = 0;
+						for (int i = 0, j = 0; i <= len; i++, j++) {
+							tmpBuf[j] = _scriptPointer[i];
+							if (tmpBuf[j] == 1)
+								numOfNewLines++;
+							else if (tmpBuf[j] != 255)
+								numOfNewLines = 0;
+							if (numOfNewLines == 2)
+								// the original text had 2 newlines in the middle, add more newlines
+								for (int k = 0; k < 14; k++) {
+									tmpBuf[++j] = 255;
+									tmpBuf[++j] = 1;
+								}
+						}
+						printString(textSlot, tmpBuf);
+				} else if (_game.id == GID_LOOM && strcmp((const char *) _scriptPointer, "I am Choas.") == 0) {
 					// WORKAROUND: This happens when Chaos introduces
 					// herself to bishop Mandible. Of all the places to put
 					// a typo...
