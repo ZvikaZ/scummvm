@@ -551,7 +551,9 @@ ScummEngine::ScummEngine(OSystem *syst, const DetectorResult &dr)
 
 	if (_game.platform == Common::kPlatformFMTowns && _game.version == 3) {	// FM-TOWNS V3 games use 320x240
 		_screenWidth = 320;
-		_screenHeight = 240;
+		//Z TODO: make this configurable
+		//Z _screenHeight = 240;
+		_screenHeight = 200;
 	} else if (_game.version == 8 || _game.heversion >= 71) {
 		// COMI uses 640x480. Likewise starting from version 7.1, HE games use
 		// 640x480, too.
