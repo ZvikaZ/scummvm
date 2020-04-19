@@ -1626,7 +1626,6 @@ void ScummEngine::applyWorkaroundIfNeeded(ResType type, int idx, byte *ptr) {
 					cnt--;
 				}
 			}
-			debug("Hi");
 		}
 }
 

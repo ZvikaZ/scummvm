@@ -616,8 +616,10 @@ void CharsetRendererV3::printChar(int chr, bool ignoreCharsetMask) {
 
 	assertRange(0, _curId, _vm->_numCharsets - 1, "charset");
 
-	if ((vs = _vm->findVirtScreen(_top)) == NULL)
+	if ((vs = _vm->findVirtScreen(_top)) == NULL) {
+		warning("findVirtScreen(%d) failed, therefore printChar cannot print '%c'", _top, chr);
 		return;
+	}
 
 	if (chr == '@')
 		return;
@@ -1039,6 +1041,8 @@ void CharsetRendererTownsV3::enableShadow(bool enable) {
 }
 
 void CharsetRendererTownsV3::drawBits1(Graphics::Surface &dest, int x, int y, const byte *src, int drawTop, int width, int height) {
+	if (y + height > dest.h)
+		error("Trying to draw below screen boundries");
 #ifndef DISABLE_TOWNS_DUAL_LAYER_MODE
 #ifdef USE_RGB_COLOR
 	if (_sjisCurChar) {
