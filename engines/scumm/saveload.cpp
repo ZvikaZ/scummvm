@@ -1424,13 +1424,11 @@ void ScummEngine::saveLoadWithSerializer(Common::Serializer &s) {
 	//TODO document
 	if (_game.platform == Common::kPlatformFMTowns && s.isLoading() && _game.id == GID_ZAK) {
 		_verbs[getVerbSlot(116, 0)].curRect.top = 208 - 18;			//TODO according to config
-		int zak_inventory_display_limit = 6;  //TODO 2; for debugging, also at end of resource.cpp
+		int zak_inventory_display_limit = 6;
 		_verbs[getVerbSlot(116, 0)].curmode = getInventoryCount(_scummVars[VAR_EGO]) > zak_inventory_display_limit;
-		for (int v = 101 + zak_inventory_display_limit; v <= 110; v++)	//TODO: replace 103!!!
-			//_verbs[getVerbSlot(v, 0)].curmode = 0;		//TODO according to config
-			// the above one - causes problems with loading original 6 items (with 2 limit). it loads OK, but when scrolling down, they re-appear
-			// the bottom one - maybe will be problematic with moving back to 10 items?
+		for (int v = 101 + zak_inventory_display_limit; v <= 110; v++)
 			killVerb(getVerbSlot(v, 0));				//TODO according to config
+		runInventoryScript(0);
 	}
 
 

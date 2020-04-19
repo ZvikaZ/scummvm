@@ -1622,7 +1622,7 @@ void ScummEngine::applyWorkaroundIfNeeded(ResType type, int idx, byte *ptr) {
 		if (type == rtScript && idx == 20) {
 			for (int cnt = 5; cnt; ptr++) {
 				if (*ptr == 10) {
-					*ptr = 6;   //TODO return it to 2, for debugging save games, and also at 'saveload.cpp' zak_inventory_display_limit;
+					*ptr = 6;
 					cnt--;
 				}
 			}
