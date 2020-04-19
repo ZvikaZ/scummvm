@@ -2367,7 +2367,8 @@ void ScummEngine_v5::o5_verbOps() {
 						break;
 					}
 				}
-			}
+			} else if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_ZAK && verb == 116) //TODO && enabled feature ; doc
+				vs->curRect.top -= 18;
 			break;
 		case 6:		// SO_VERB_ON
 			vs->curmode = 1;

@@ -757,6 +757,7 @@ void ScummEngine::stopObjectCode() {
 }
 
 void ScummEngine::runInventoryScript(int i) {
+	warning("actual %d", _verbs[getVerbSlot(116, 0)].curRect.top);
 	if (VAR(VAR_INVENTORY_SCRIPT)) {
 		if (_game.id == GID_INDY3 && _game.platform == Common::kPlatformMacintosh) {
 			inventoryScriptIndy3Mac();
