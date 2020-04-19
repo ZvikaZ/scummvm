@@ -1262,6 +1262,7 @@ void ScummEngine::saveLoadWithSerializer(Common::Serializer &s) {
 				while (s.syncAsUint16LE(idx), idx != 0xFFFF) {
 					assert(idx < _res->_types[type].size());
 					loadResource(s, type, idx);
+					applyWorkaroundIfNeeded(type, idx, getResourceAddress(rtScript, idx));
 				}
 			}
 		}
@@ -1332,6 +1333,17 @@ void ScummEngine::saveLoadWithSerializer(Common::Serializer &s) {
 		s.syncAsByte(_townsPaletteFlags, VER(82));
 		s.syncAsByte(_townsClearLayerFlag, VER(82));
 		s.syncAsByte(_townsActiveLayerFlags, VER(82));
+		if (s.isLoading() && _game.id == GID_ZAK) {
+			_verbs[getVerbSlot(116, 0)].curRect.top = 208 - 18;			//TODO according to config
+			int zak_inventory_display_limit = 2;
+			if (_verbs[getVerbSlot(101 + zak_inventory_display_limit, 0)].curmode)
+				_verbs[getVerbSlot(116, 0)].curmode = 1;	// enable 'down arrow'
+			for (int v = 101 + zak_inventory_display_limit; v <= 110; v++)	//TODO: replace 103!!!
+				//_verbs[getVerbSlot(v, 0)].curmode = 0;		//TODO according to config
+				// the above one - causes problems with loading original 6 items (with 2 limit). it loads OK, but when scrolling down, they re-appear
+				// the bottom one - maybe will be problematic with moving back to 10 items?
+				killVerb(getVerbSlot(v, 0));				//TODO according to config
+		}
 	} else if (_game.platform == Common::kPlatformFMTowns && s.getVersion() >= VER(82)) {
 		warning("Save file is missing FM-Towns specific graphic data (game was apparently saved on another platform)");
 	}

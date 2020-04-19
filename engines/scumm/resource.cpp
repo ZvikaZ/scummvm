@@ -691,8 +691,10 @@ int ScummEngine::loadResource(ResType type, ResId idx) {
 	}
 	_fileHandle->read(_res->createResource(type, idx, size), size);
 
+	applyWorkaroundIfNeeded(type, idx, getResourceAddress(rtScript, idx));
+
 	// dump the resource if requested
-	if (_dumpScripts && type == rtScript) {
+	if (type == rtScript) {   //Z UNDO THIS!!!
 		dumpResource("script-", idx, getResourceAddress(rtScript, idx));
 	}
 
@@ -1613,5 +1615,20 @@ const char *nameOfResType(ResType type) {
 		return buf;
 	}
 }
+
+
+void ScummEngine::applyWorkaroundIfNeeded(ResType type, int idx, byte *ptr) {
+	if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_ZAK) //TODO && enabled feature
+		if (type == rtScript && idx == 20) {
+			for (int cnt = 5; cnt; ptr++) {
+				if (*ptr == 10) {
+					*ptr = 2;
+					cnt--;
+				}
+			}
+			debug("Hi");
+		}
+}
+
 
 } // End of namespace Scumm
