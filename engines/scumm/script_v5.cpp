@@ -2620,6 +2620,13 @@ void ScummEngine_v5::decodeParseString() {
 			_string[textSlot].xpos = getVarOrDirectWord(PARAM_1);
 			_string[textSlot].ypos = getVarOrDirectWord(PARAM_2);
 			_string[textSlot].overhead = false;
+			// WORKAROUND TODO explain!!!
+			if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_LOOM) { //TODO && enabled feature
+				if (_string[textSlot].ypos == 198)
+					_string[textSlot].ypos -= 40;
+				else if (_currentRoom == 64 && _string[textSlot].xpos == 160 && _string[textSlot].ypos == 144)
+					_string[textSlot].ypos -= 30;		//TODO revert back to 0 - and make sure that there is a warning! (it's 'actor' talk)
+			}
 			break;
 		case 1:		// SO_COLOR
 			_string[textSlot].color = getVarOrDirectByte(PARAM_1);

@@ -1039,6 +1039,8 @@ void CharsetRendererTownsV3::enableShadow(bool enable) {
 }
 
 void CharsetRendererTownsV3::drawBits1(Graphics::Surface &dest, int x, int y, const byte *src, int drawTop, int width, int height) {
+	if (y + height > dest.h)
+		warning("Printing below screen boundries");
 #ifndef DISABLE_TOWNS_DUAL_LAYER_MODE
 #ifdef USE_RGB_COLOR
 	if (_sjisCurChar) {
