@@ -114,6 +114,12 @@ bool ScummEngine::towns_isRectInStringBox(int x1, int y1, int x2, int y2) {
 
 void ScummEngine::towns_restoreCharsetBg() {
 	if (_curStringRect.left != -1) {
+		//TODO explain!!!
+		if (_currentRoom == 64) {
+			initScreens(_screenB, _screenH);
+			_completeScreenRedraw = true;
+		}
+
 		restoreBackground(_curStringRect, 0);
 		_curStringRect.left = -1;
 		_charset->_hasMask = false;
