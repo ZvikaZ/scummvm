@@ -21,6 +21,7 @@
  */
 
 #include "common/endian.h"
+#include "common/config-manager.h"
 
 #include "scumm/scumm.h"
 #include "scumm/charset.h"
@@ -114,8 +115,10 @@ bool ScummEngine::towns_isRectInStringBox(int x1, int y1, int x2, int y2) {
 
 void ScummEngine::towns_restoreCharsetBg() {
 	if (_curStringRect.left != -1) {
-		//TODO explain!!!
-		if (_currentRoom == 64) {
+		// WORKAROUND: FM-TOWNS Loom prints a lot of text in Cygna's grave (room 64), that goes to the extra 40 pixels
+		// if we trim, we need to move it to higher location
+		// however, not of all gets deleted, therefore we force a screen refresh
+		if (_game.id == GID_LOOM && ConfMan.getBool("trim_fmtowns_to_200_pixels") && _currentRoom == 64) {
 			initScreens(_screenB, _screenH);
 			_completeScreenRedraw = true;
 		}

@@ -32,6 +32,7 @@
 #include "scumm/verbs.h"
 
 #include "common/savefile.h"
+#include "common/config-manager.h"
 
 namespace Scumm {
 
@@ -2367,7 +2368,9 @@ void ScummEngine_v5::o5_verbOps() {
 						break;
 					}
 				}
-			} else if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_ZAK && verb == 116) //TODO && enabled feature ; doc
+			} else if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_ZAK && ConfMan.getBool("trim_fmtowns_to_200_pixels") && verb == 116)
+				// WORKAROUND: FM-TOWNS Zak used the extra 40 pixels at the bottom to increase the inventory to 10 items
+				// if we trim to 200 pixels, we need to move the 'down arrow' (verb 116) to higher location
 				vs->curRect.top -= 18;
 			break;
 		case 6:		// SO_VERB_ON
@@ -2620,11 +2623,14 @@ void ScummEngine_v5::decodeParseString() {
 			_string[textSlot].xpos = getVarOrDirectWord(PARAM_1);
 			_string[textSlot].ypos = getVarOrDirectWord(PARAM_2);
 			_string[textSlot].overhead = false;
-			// WORKAROUND TODO explain!!!
-			if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_LOOM) { //TODO && enabled feature
+			if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_LOOM && ConfMan.getBool("trim_fmtowns_to_200_pixels")) {
+				// WORKAROUND: FM-TOWNS Loom prints the inventory names (partially) in the extra 40 pixels
+				// if we trim, we need to move it to higher location
 				if (_string[textSlot].ypos == 198)
 					_string[textSlot].ypos -= 40;
 				else if (_currentRoom == 64 && _string[textSlot].xpos == 160 && _string[textSlot].ypos == 144)
+					// WORKAROUND: FM-TOWNS Loom prints a lot of text in Cygna's grave (room 64), that goes to the extra 40 pixels
+					// if we trim, we need to move it to higher location
 					_string[textSlot].ypos -= 30;
 			}
 			break;
