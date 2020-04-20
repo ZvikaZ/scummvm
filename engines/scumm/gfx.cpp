@@ -365,7 +365,6 @@ void ScummEngine::initScreens(int b, int h) {
 		initVirtScreen(kUnkVirtScreen, 0, _screenWidth, adj, false, false);
 	}
 
-	//Z TODO: make sure that it's working well for saved games
 	initVirtScreen(kMainVirtScreen, b + adj, _screenWidth, h - b, true, true);
 	initVirtScreen(kTextVirtScreen, adj, _screenWidth, b, false, false);
 	initVirtScreen(kVerbVirtScreen, h + adj, _screenWidth, _screenHeight - h - adj, false, false);
@@ -616,9 +615,6 @@ void ScummEngine::drawStripToScreen(VirtScreen *vs, int x, int width, int top, i
 	assert(x >= 0 && width <= vs->pitch);
 	assert(_textSurface.getPixels());
 
-//Z	if (vs->number == kVerbVirtScreen)
-//Z		debugN("Z: top=%d, bottom=%d, _screenTop=%d, _screenHeight=%d", top, bottom, _screenTop, _screenHeight);
-
 	// Perform some clipping
 	if (width > vs->w - x)
 		width = vs->w - x;
@@ -630,9 +626,6 @@ void ScummEngine::drawStripToScreen(VirtScreen *vs, int x, int width, int top, i
 	// Convert the vertical coordinates to real screen coords
 	int y = vs->topline + top - _screenTop;
 	int height = bottom - top;
-
-//Z	if (vs->number == kVerbVirtScreen)
-//Z		debug(", y=%d, height=%d", y, height);
 
 	if (width <= 0 || height <= 0)
 		return;

@@ -694,7 +694,7 @@ int ScummEngine::loadResource(ResType type, ResId idx) {
 	applyWorkaroundIfNeeded(type, idx, getResourceAddress(rtScript, idx));
 
 	// dump the resource if requested
-	if (type == rtScript) {   //Z UNDO THIS!!!
+	if (_dumpScripts && type == rtScript) {
 		dumpResource("script-", idx, getResourceAddress(rtScript, idx));
 	}
 
