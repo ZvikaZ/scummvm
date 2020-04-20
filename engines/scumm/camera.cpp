@@ -183,7 +183,6 @@ void ScummEngine::cameraMoved() {
 	_screenEndStrip = _screenStartStrip + _gdi->_numStrips - 1;
 
 	_screenTop = camera._cur.y - (_screenHeight / 2);
-	//Z debug("cameraMoved: _screenTop=%d, camera._cur.y=%d, _screenHeight=%d", _screenTop, camera._cur.y, _screenHeight);
 	if (_game.version >= 7) {
 		screenLeft = camera._cur.x - (_screenWidth / 2);
 	} else {
