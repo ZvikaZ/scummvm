@@ -1427,6 +1427,12 @@ void ScummEngine::saveLoadWithSerializer(Common::Serializer &s) {
 	// if we trim to 200 pixels, we can show only 6 items
 	// therefore we need to make sure that the inventory is now display correctly, regardless of the mode that the game was saved with
 	if (s.isLoading() && _game.platform == Common::kPlatformFMTowns && _game.id == GID_ZAK) {
+		if (ConfMan.getBool("trim_fmtowns_to_200_pixels"))
+			_verbs[getVerbSlot(116, 0)].curRect.top = 208 - 18;		// make down arrow higher
+		else
+			_verbs[getVerbSlot(116, 0)].curRect.top = 208;			// return down arrow to its original location
+
+		// make sure the appropriate verbs and arrows are printed
 		runInventoryScript(0);
 	}
 
