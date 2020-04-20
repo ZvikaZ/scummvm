@@ -1372,10 +1372,22 @@ static const ExtraGuiOption comiObjectLabelsOption = {
 	true
 };
 
+static const ExtraGuiOption fmtownsTrimTo200 = {
+	_s("Trim FM-TOWNS games to 200 pixels height (EXPERIMENTAL)"),
+	_s("Cut the extra 40 pixels at the bottom of the screen, to make it standard 200 pixels height, allowing using 'aspect ratio correction'.\n"
+		"This is still experimental, and hasn't been thoroughly tested yet. Your feedback is welcome!"),
+	"trim_fmtowns_to_200_pixels",
+	false
+};
+
+
 const ExtraGuiOptions ScummMetaEngine::getExtraGuiOptions(const Common::String &target) const {
 	ExtraGuiOptions options;
 	if (target.empty() || ConfMan.get("gameid", target) == "comi") {
 		options.push_back(comiObjectLabelsOption);
+	}
+	if (target.empty() || ConfMan.get("platform", target) == "fmtowns") {
+		options.push_back(fmtownsTrimTo200);
 	}
 	return options;
 }

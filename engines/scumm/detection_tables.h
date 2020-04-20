@@ -216,7 +216,6 @@ static const GameSettings gameVariantsTable[] = {
 
 	{"zak", "V1",       "v1", GID_ZAK, 1, 0, MDT_PCSPK | MDT_PCJR, 0, UNK, GUIO2(GUIO_NOSPEECH, GUIO_NOMIDI)},
 	{"zak", "V2",       "v2", GID_ZAK, 2, 0, MDT_PCSPK | MDT_PCJR, 0, UNK, GUIO2(GUIO_NOSPEECH, GUIO_NOMIDI)},
-	//Z TODO make these configurable...
 	{"zak", "FM-TOWNS",    0, GID_ZAK, 3, 0, MDT_TOWNS, GF_OLD256 | GF_AUDIOTRACKS, Common::kPlatformFMTowns, GUIO3(GUIO_NOSPEECH, GUIO_NOMIDI, GUIO_MIDITOWNS)},
 	{"zakloom", "FM-TOWNS",    0, GID_ZAK, 3, 0, MDT_TOWNS, GF_OLD256 | GF_AUDIOTRACKS, Common::kPlatformFMTowns, GUIO3(GUIO_NOSPEECH, GUIO_NOMIDI, GUIO_MIDITOWNS)},
 	{"indyloom", "FM-TOWNS",    0, GID_ZAK, 3, 0, MDT_TOWNS, GF_OLD256 | GF_AUDIOTRACKS, Common::kPlatformFMTowns, GUIO3(GUIO_NOSPEECH, GUIO_NOMIDI, GUIO_MIDITOWNS)},
