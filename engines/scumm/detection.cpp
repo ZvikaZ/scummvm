@@ -1375,7 +1375,7 @@ static const ExtraGuiOption comiObjectLabelsOption = {
 static const ExtraGuiOption fmtownsTrimTo200 = {
 	_s("Trim FM-TOWNS games to 200 pixels height (EXPERIMENTAL)"),
 	_s("Cut the extra 40 pixels at the bottom of the screen, to make it standard 200 pixels height, allowing using 'aspect ratio correction'.\n"
-		"This is still experimental, and hasn't been thoroughly tested yet. Your feedback is welcome!"),
+		"This is still experimental, and hasn't been thoroughly tested yet.\nYour feedback is welcome!"),
 	"trim_fmtowns_to_200_pixels",
 	false
 };

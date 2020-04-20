@@ -1432,7 +1432,7 @@ void ScummEngine::saveLoadWithSerializer(Common::Serializer &s) {
 		else
 			_verbs[getVerbSlot(116, 0)].curRect.top = 208;			// return down arrow to its original location
 
-		// make sure the appropriate verbs and arrows are printed
+		// make sure the appropriate verbs and arrows are displayed
 		runInventoryScript(0);
 	}
 
