@@ -1383,10 +1383,14 @@ static const ExtraGuiOption fmtownsTrimTo200 = {
 
 const ExtraGuiOptions ScummMetaEngine::getExtraGuiOptions(const Common::String &target) const {
 	ExtraGuiOptions options;
+	// Query the GUI options
+	const Common::String guiOptionsString = ConfMan.get("guioptions", target);
+	const Common::String guiOptions = parseGameGUIOptions(guiOptionsString);
+
 	if (target.empty() || ConfMan.get("gameid", target) == "comi") {
 		options.push_back(comiObjectLabelsOption);
 	}
-	if (target.empty() || ConfMan.get("platform", target) == "fmtowns") {
+	if (target.empty() || (ConfMan.get("platform", target) == "fmtowns" && guiOptions.contains(GUIO_TRIM_FMTOWNS_TO_240_PIXELS))) {
 		options.push_back(fmtownsTrimTo200);
 	}
 	return options;

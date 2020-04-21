@@ -522,13 +522,14 @@ ScummEngine::ScummEngine(OSystem *syst, const DetectorResult &dr)
 		_renderMode = Common::kRenderDefault;
 	}
 
-	if (ConfMan.getBool("aspect_ratio") && !ConfMan.getBool("trim_fmtowns_to_200_pixels")) {
-		GUI::MessageDialog dialog(
-			_("You have enabled 'aspect ratio correction'. However, FM-TOWNS' natural resolution is 320x240, which doesn't enable to run aspect ratio correction.\n"
-			  "It can be acheived by trimming the resolution to 320x200, under 'engine' tab.\n"
-			  "Note however, that this feature hasn't been thoroughly tested yet.\nYour feedback is welcome!"));
-		dialog.runModal();
-	}
+	if (_game.platform == Common::kPlatformFMTowns && _game.version == 3)
+		if (ConfMan.getBool("aspect_ratio") && !ConfMan.getBool("trim_fmtowns_to_200_pixels")) {
+			GUI::MessageDialog dialog(
+				_("You have enabled 'aspect ratio correction'. However, FM-TOWNS' natural resolution is 320x240, which doesn't enable to run aspect ratio correction.\n"
+				  "It can be acheived by trimming the resolution to 320x200, under 'engine' tab.\n"
+				  "Note however, that this feature hasn't been thoroughly tested yet.\nYour feedback is welcome!"));
+			dialog.runModal();
+		}
 
 	// Check some render mode restrictions
 	if (_game.version <= 1)
