@@ -1432,6 +1432,11 @@ void ScummEngine::saveLoadWithSerializer(Common::Serializer &s) {
 		else
 			_verbs[getVerbSlot(116, 0)].curRect.top = 208;			// return down arrow to its original location
 
+		if (ConfMan.getBool("trim_fmtowns_to_200_pixels"))
+			// VAR(102) to VAR(111) originally keep the 10 displayed inventory items; clean the last 4 ones
+			for (int v = 102 + 6; v <= 111; v++)
+				VAR(v) = 0;
+
 		// make sure the appropriate verbs and arrows are displayed
 		runInventoryScript(0);
 	}
