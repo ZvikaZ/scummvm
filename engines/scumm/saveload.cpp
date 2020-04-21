@@ -1264,7 +1264,7 @@ void ScummEngine::saveLoadWithSerializer(Common::Serializer &s) {
 				while (s.syncAsUint16LE(idx), idx != 0xFFFF) {
 					assert(idx < _res->_types[type].size());
 					loadResource(s, type, idx);
-					applyWorkaroundIfNeeded(type, idx, getResourceAddress(rtScript, idx));
+					applyWorkaroundIfNeeded(type, idx);
 				}
 			}
 		}

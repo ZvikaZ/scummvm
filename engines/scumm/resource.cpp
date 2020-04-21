@@ -691,7 +691,7 @@ int ScummEngine::loadResource(ResType type, ResId idx) {
 	}
 	_fileHandle->read(_res->createResource(type, idx, size), size);
 
-	applyWorkaroundIfNeeded(type, idx, getResourceAddress(rtScript, idx));
+	applyWorkaroundIfNeeded(type, idx);
 
 	// dump the resource if requested
 	if (_dumpScripts && type == rtScript) {
@@ -1617,13 +1617,14 @@ const char *nameOfResType(ResType type) {
 }
 
 
-void ScummEngine::applyWorkaroundIfNeeded(ResType type, int idx, byte *ptr) {
+void ScummEngine::applyWorkaroundIfNeeded(ResType type, int idx) {
 	// WORKAROUND: FM-TOWNS Zak used the extra 40 pixels at the bottom to increase the inventory to 10 items
 	// if we trim to 200 pixels, we can show only 6 items
 	// therefore we patch the inventory script (20)
 	// replacing the 5 occurences of 10 as limit to 6
 	if (_game.platform == Common::kPlatformFMTowns && _game.id == GID_ZAK && ConfMan.getBool("trim_fmtowns_to_200_pixels"))
 		if (type == rtScript && idx == 20) {
+			byte *ptr = getResourceAddress(rtScript, idx);
 			for (int cnt = 5; cnt; ptr++) {
 				if (*ptr == 10) {
 					*ptr = 6;
