@@ -27,6 +27,8 @@
 
 #define TRANSLATIONS_DAT_VER 3
 
+#include <fribidi/fribidi.h>
+
 #include "common/translation.h"
 #include "common/config-manager.h"
 #include "common/file.h"
@@ -449,6 +451,49 @@ bool TranslationManager::checkHeader(File &in) {
 
 	return true;
 }
+
+String TranslationManager::bidiAlgo(const String input) {
+	if (getCurrentLanguage() != "he")		//TODO: modify when we'll support other RTL languages, such as Arabic and Farsi
+		return input;
+
+	if (getCurrentCharset() != "iso-8859-8") {
+		warning("Unexpected charset is used with %s language: %s", getCurrentLanguage().c_str(), getCurrentCharset().c_str());
+		return input;
+	};
+
+	int buff_length = (input.size() + 2) * 5;		// it's more than enough, but it's better to be on the safe side
+	FriBidiChar *input_unicode = new(FriBidiChar[buff_length]);
+	FriBidiChar *visual_str = new(FriBidiChar[buff_length]);
+	char *output = new(char[buff_length]);
+
+	FriBidiCharType pbase_dir = FRIBIDI_TYPE_ON;
+	FriBidiCharSet char_set = FRIBIDI_CHAR_SET_ISO8859_8;
+
+	FriBidiStrIndex length = fribidi_charset_to_unicode(char_set, input.c_str(), input.size(), input_unicode);
+
+	fribidi_log2vis(
+		/* input */
+		input_unicode,
+		length,
+		&pbase_dir,
+		/* output */
+		visual_str,
+		NULL,			// position_L_to_V_list,
+		NULL,			// position_V_to_L_list,
+		NULL			// embedding_level_list
+	);
+
+	fribidi_unicode_to_charset(char_set, visual_str, length, output);
+
+	String result = String(output);
+	delete[] input_unicode;
+	delete[] visual_str;
+	delete[] output;
+
+	return result;
+}
+
+
 
 } // End of namespace Common
 
