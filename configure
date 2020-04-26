@@ -1062,8 +1062,6 @@ Optional Features:
                            WARNING: only specify this manually if you know what
                            you are doing!
 
-  --with-fribidi-prefix=DIR    prefix where libfribidi is installed
-
 Optional Libraries:
   --with-alsa-prefix=DIR   prefix where alsa is installed (optional)
   --disable-alsa           disable ALSA midi sound support [autodetect]
@@ -1079,6 +1077,9 @@ Optional Libraries:
 
   --with-mad-prefix=DIR    prefix where libmad is installed (optional)
   --disable-mad            disable libmad (MP3) support [autodetect]
+
+  --with-fribidi-prefix=DIR    prefix where libfribidi is installed
+  --disable-fribidi            disable libfribidi support [autodetect]
 
   --with-flac-prefix=DIR   prefix where libFLAC is installed (optional)
   --disable-flac           disable FLAC support [autodetect]
@@ -1237,6 +1238,8 @@ for ac_option in $@; do
 	--disable-flac)               _flac=no               ;;
 	--enable-mad)                 _mad=yes               ;;
 	--disable-mad)                _mad=no                ;;
+	--enable-fribidi)             _fribidi=yes           ;;
+	--disable-fribidi)            _fribidi=no            ;;
 	--enable-zlib)                _zlib=yes              ;;
 	--disable-zlib)               _zlib=no               ;;
 	--enable-sparkle)             _sparkle=yes           ;;
