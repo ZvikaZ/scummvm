@@ -27,10 +27,6 @@
 
 #define TRANSLATIONS_DAT_VER 3
 
-#ifdef USE_FRIBIDI
-#include <fribidi/fribidi.h>
-#endif
-
 #include "common/translation.h"
 #include "common/config-manager.h"
 #include "common/file.h"
@@ -39,6 +35,10 @@
 #include "common/textconsole.h"
 
 #ifdef USE_TRANSLATION
+
+#ifdef USE_FRIBIDI
+#include <fribidi/fribidi.h>
+#endif
 
 namespace Common {
 
