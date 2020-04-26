@@ -464,10 +464,10 @@ String TranslationManager::bidiAlgo(const String input) {
 		return input;
 	};
 
-	int buff_length = (input.size() + 2) * 5;		// it's more than enough, but it's better to be on the safe side
-	FriBidiChar *input_unicode = new(FriBidiChar[buff_length]);
-	FriBidiChar *visual_str = new(FriBidiChar[buff_length]);
-	char *output = new(char[buff_length]);
+	int buff_length = (input.size() + 2) * 2;		// it's more than enough, but it's better to be on the safe side
+	FriBidiChar *input_unicode = (FriBidiChar *)malloc(buff_length * sizeof(FriBidiChar));
+	FriBidiChar *visual_str = (FriBidiChar *)malloc(buff_length * sizeof(FriBidiChar));
+	char *output = (char *)malloc(buff_length);
 
 	FriBidiCharType pbase_dir = FRIBIDI_TYPE_ON;
 	FriBidiCharSet char_set = FRIBIDI_CHAR_SET_ISO8859_8;
@@ -489,9 +489,9 @@ String TranslationManager::bidiAlgo(const String input) {
 	fribidi_unicode_to_charset(char_set, visual_str, length, output);
 
 	String result = String(output);
-	delete[] input_unicode;
-	delete[] visual_str;
-	delete[] output;
+	free(input_unicode);
+	free(visual_str);
+	free(output);
 
 	return result;
 }
