@@ -5517,14 +5517,6 @@ int main(void) { return 0; }
 EOF
 	cc_check $FRIBIDI_CFLAGS $FRIBIDI_LIBS -lfribidi && _fribidi=yes
 fi
-if test "$_fribidi" = no ; then
-	echo " not found!"
-	echo "**************"
-	echo "Missing FriBidi library, please install it"
-    echo "    Ubuntu: 'apt-get install libfribidi-dev'"
-    echo "    CentOS: 'yum install fribidi-devel'"
-	exit 1
-fi
 if test "$_fribidi" = yes ; then
 	append_var LIBS "$FRIBIDI_LIBS -lfribidi"
 	append_var INCLUDES "$FRIBIDI_CFLAGS"

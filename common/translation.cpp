@@ -27,7 +27,9 @@
 
 #define TRANSLATIONS_DAT_VER 3
 
+#ifdef USE_FRIBIDI
 #include <fribidi/fribidi.h>
+#endif
 
 #include "common/translation.h"
 #include "common/config-manager.h"
@@ -452,6 +454,7 @@ bool TranslationManager::checkHeader(File &in) {
 	return true;
 }
 
+#ifdef USE_FRIBIDI
 String TranslationManager::bidiAlgo(const String input) {
 	if (getCurrentLanguage() != "he")		//TODO: modify when we'll support other RTL languages, such as Arabic and Farsi
 		return input;
@@ -492,6 +495,11 @@ String TranslationManager::bidiAlgo(const String input) {
 
 	return result;
 }
+#else
+String TranslationManager::bidiAlgo(const String input) {
+	return input;
+}
+#endif
 
 
 
