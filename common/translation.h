@@ -174,6 +174,12 @@ public:
 	 */
 	String getCurrentLanguage() const;
 
+	/*
+	 * Wrapper for GNU FriBidi implementation of the Unicode Bidirectional Algorithm
+	 * Returns the visual representation of a logical single-line input
+	 */
+	String bidiAlgo(const String input);
+
 private:
 	/**
 	 * Tries to find the given language or a derivate of it.
