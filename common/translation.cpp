@@ -454,7 +454,6 @@ bool TranslationManager::checkHeader(File &in) {
 	return true;
 }
 
-#ifdef USE_FRIBIDI
 String TranslationManager::convertBiDiString(const String &input) {
 	if (getCurrentLanguage() != "he")		//TODO: modify when we'll support other RTL languages, such as Arabic and Farsi
 		return input;
@@ -463,6 +462,14 @@ String TranslationManager::convertBiDiString(const String &input) {
 		warning("convertBiDiString: Unexpected charset is used with %s language: %s", getCurrentLanguage().c_str(), getCurrentCharset().c_str());
 		return input;
 	};
+
+	return TranslationManager::convertBiDiString(input, HE_ISR);
+}
+
+#ifdef USE_FRIBIDI
+String TranslationManager::convertBiDiString(const String &input, const Common::Language lang) {
+	if (lang != HE_ISR)		//TODO: modify when we'll support other RTL languages, such as Arabic and Farsi
+		return input;
 
 	int buff_length = (input.size() + 2) * 2;		// it's more than enough, but it's better to be on the safe side
 	FriBidiChar *input_unicode = (FriBidiChar *)malloc(buff_length * sizeof(FriBidiChar));
@@ -496,7 +503,7 @@ String TranslationManager::convertBiDiString(const String &input) {
 	return result;
 }
 #else
-String TranslationManager::bidiAlgo(const String &input) {
+String TranslationManager::convertBiDiString(const String &input, const Common::Language lang) {
 	return input;
 }
 #endif
