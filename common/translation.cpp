@@ -455,12 +455,12 @@ bool TranslationManager::checkHeader(File &in) {
 }
 
 #ifdef USE_FRIBIDI
-String TranslationManager::bidiAlgo(const String input) {
+String TranslationManager::convertBiDiString(const String &input) {
 	if (getCurrentLanguage() != "he")		//TODO: modify when we'll support other RTL languages, such as Arabic and Farsi
 		return input;
 
 	if (getCurrentCharset() != "iso-8859-8") {
-		warning("Unexpected charset is used with %s language: %s", getCurrentLanguage().c_str(), getCurrentCharset().c_str());
+		warning("convertBiDiString: Unexpected charset is used with %s language: %s", getCurrentLanguage().c_str(), getCurrentCharset().c_str());
 		return input;
 	};
 
@@ -496,7 +496,7 @@ String TranslationManager::bidiAlgo(const String input) {
 	return result;
 }
 #else
-String TranslationManager::bidiAlgo(const String input) {
+String TranslationManager::bidiAlgo(const String &input) {
 	return input;
 }
 #endif
