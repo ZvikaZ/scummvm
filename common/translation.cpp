@@ -481,7 +481,7 @@ String TranslationManager::convertBiDiString(const String &input, const Common::
 
 	FriBidiStrIndex length = fribidi_charset_to_unicode(char_set, input.c_str(), input.size(), input_unicode);
 
-	fribidi_log2vis(
+	if (!fribidi_log2vis(
 		/* input */
 		input_unicode,
 		length,
@@ -491,7 +491,10 @@ String TranslationManager::convertBiDiString(const String &input, const Common::
 		NULL,			// position_L_to_V_list,
 		NULL,			// position_V_to_L_list,
 		NULL			// embedding_level_list
-	);
+	)) {
+		warning("convertBiDiString: calling fribidi_log2vis failed");
+		return input;
+	}
 
 	fribidi_unicode_to_charset(char_set, visual_str, length, output);
 
