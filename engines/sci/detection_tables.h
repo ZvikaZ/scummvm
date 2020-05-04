@@ -4777,7 +4777,7 @@ static const struct ADGameDescription SciGameDescriptions[] = {
 		AD_LISTEND},
 		Common::EN_ANY, Common::kPlatformDOS, 0, GUIO_STD16_UNDITHER	},
 
-	// Space Quest 3 - English DOS (from the Space Quest Collection)
+	// Space Quest 3 - "Hebrew" DOS (from the Space Quest Collection)
 	// Executable scanning reports "0.000.685", VERSION file reports "1.018"
 	// DONT COMMIT!!!!!
 	{ "sq3", "", {

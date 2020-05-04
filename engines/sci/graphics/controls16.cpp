@@ -113,7 +113,10 @@ void GfxControls16::texteditCursorDraw(Common::Rect rect, const char *text, uint
 		for (i = 0; i < curPos; i++) {
 			textWidth += _text16->_font->getCharWidth((unsigned char)text[i]);
 		}
-		_texteditCursorRect.left = rect.left + textWidth;
+		if (g_sci->getLanguage() != Common::HE_ISR)
+			_texteditCursorRect.left = rect.left + textWidth;
+		else
+			_texteditCursorRect.left = rect.right - textWidth;
 		_texteditCursorRect.top = rect.top;
 		_texteditCursorRect.bottom = _texteditCursorRect.top + _text16->_font->getHeight();
 		_texteditCursorRect.right = _texteditCursorRect.left + (text[curPos] == 0 ? 1 : _text16->_font->getCharWidth((unsigned char)text[curPos]));
