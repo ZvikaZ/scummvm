@@ -4777,6 +4777,18 @@ static const struct ADGameDescription SciGameDescriptions[] = {
 		AD_LISTEND},
 		Common::EN_ANY, Common::kPlatformDOS, 0, GUIO_STD16_UNDITHER	},
 
+	// Space Quest 3 - English DOS (from the Space Quest Collection)
+	// Executable scanning reports "0.000.685", VERSION file reports "1.018"
+	// DONT COMMIT!!!!!
+	{ "sq3", "", {
+		{"resource.map", 0, "55e91aeef1705bce2a9b79172682f36d", 5730},
+		{"resource.001", 0, "8b55c4875298f45ea5696a5ee8f6a7fe", 490247},
+		{"resource.002", 0, "8b55c4875298f45ea5696a5ee8f6a7fe", 715777},
+		{"resource.003", 0, "8b55c4875298f45ea5696a5ee8f6a7fe", 703370},
+		AD_LISTEND},
+		Common::HE_ISR, Common::kPlatformDOS, 0, GUIO_STD16_UNDITHER },
+
+
 	// Space Quest 3 - English DOS 6 x 360k Floppy (from misterhands, bug report Trac #10677 and goodoldgeorge, bug report Trac #10636)
 	// Executable scanning reports "0.000.685", VERSION file reports "1.018"
 	{"sq3", "", {
