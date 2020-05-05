@@ -116,7 +116,8 @@ bool Vocabulary::loadParserWords() {
 		}
 		// If all of them were empty, we are definitely seeing SCI01 vocab in disguise (e.g. pq2 japanese)
 		if (alphabetNr == 26) {
-			warning("SCI0: Found SCI01 vocabulary in disguise");
+			if (g_sci->getLanguage() != Common::HE_ISR)
+				warning("SCI0: Found SCI01 vocabulary in disguise");
 			resourceType = kVocabularySCI1;
 		}
 	}
@@ -482,6 +483,31 @@ void Vocabulary::lookupWord(ResultWordList& retval, const char *word, int word_l
 	}
 }
 
+void Vocabulary::lookupWordPrefix(ResultWordList &retval, const char *word, int word_len) {
+	// currently, this is needed only for Hebrew translation
+	if (g_sci->getLanguage() != Common::HE_ISR)
+		return;
+
+	ResultWordList word_list;
+
+	if (--word_len <= 0)
+		return;
+
+	lookupSpecificPrefix(word_list, word, word_len, retval, 0xe1, "in");			// "Bet"
+	lookupSpecificPrefix(word_list, word, word_len, retval, 0xe4, "the");			// "He Hayedia"
+	lookupSpecificPrefix(word_list, word, word_len, retval, 0xec, "to");			// "Lamed"
+}
+
+void Vocabulary::lookupSpecificPrefix(Sci::ResultWordList &word_list, const char *word, int word_len, Sci::ResultWordList &retval, unsigned char prefix, const char *meaning) {
+	if ((unsigned char)word[0] == prefix) {
+		lookupWord(word_list, word + 1, word_len);
+		if (!word_list.empty() && _parserWords.contains(meaning)) {
+			word_list.push_front(_parserWords[meaning].front());
+			retval = word_list;
+		}
+	}
+}
+
 void Vocabulary::debugDecipherSaidBlock(const SciSpan<const byte> &data) {
 	bool first = true;
 	uint16 nextItem;
@@ -585,10 +611,14 @@ bool Vocabulary::tokenizeString(ResultWordListList &retval, const char *sentence
 				lookupWord(lookup_result, currentWord, wordLen);
 
 				if (lookup_result.empty()) { // Not found?
-					*error = (char *)calloc(wordLen + 1, 1);
-					strncpy(*error, currentWord, wordLen); // Set the offending word
-					retval.clear();
-					return false; // And return with error
+					lookupWordPrefix(lookup_result, currentWord, wordLen);
+
+					if (lookup_result.empty()) { // Not found? {
+						*error = (char *)calloc(wordLen + 1, 1);
+						strncpy(*error, currentWord, wordLen); // Set the offending word
+						retval.clear();
+						return false; // And return with error
+					}
 				}
 
 				// Copy into list

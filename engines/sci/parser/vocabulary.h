@@ -208,6 +208,18 @@ public:
 	 */
 	void lookupWord(ResultWordList &retval, const char *word, int word_len);
 
+	/**
+	 * Looks up a single word in the words list, taking into account suffixes
+	 * Note: there is no equivalent in Sierra SCI, added to support specific languages translations
+	 * @param retval	the list of matches
+	 * @param word		pointer to the word to look up
+	 * @param word_len	length of the word to look up
+	 */
+	void lookupWordPrefix(ResultWordList &retval, const char *word, int word_len);
+
+	//TODO: document
+	void lookupSpecificPrefix(Sci::ResultWordList &word_list, const char *word, int word_len, Sci::ResultWordList &retval, unsigned char prefix, const char *meaning);
+
 
 	/**
 	 * Tokenizes a string and compiles it into word_ts.
