@@ -483,29 +483,37 @@ void Vocabulary::lookupWord(ResultWordList& retval, const char *word, int word_l
 	}
 }
 
-void Vocabulary::lookupWordPrefix(ResultWordList &retval, const char *word, int word_len) {
+void Vocabulary::lookupWordPrefix(ResultWordListList &parent_retval, ResultWordList &retval, const char *word, int word_len) {
 	// currently, this is needed only for Hebrew translation
 	if (g_sci->getLanguage() != Common::HE_ISR)
 		return;
 
-	ResultWordList word_list;
-
 	if (--word_len <= 0)
 		return;
 
-	lookupSpecificPrefix(word_list, word, word_len, retval, 0xe1, "in");			// "Bet"
-	lookupSpecificPrefix(word_list, word, word_len, retval, 0xe4, "the");			// "He Hayedia"
-	lookupSpecificPrefix(word_list, word, word_len, retval, 0xec, "to");			// "Lamed"
+	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xe1, "in"))			// "Bet"
+		return;
+	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xe4, "the"))			// "He Hayedia"
+		return;
+	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xec, "to"))			// "Lamed"
+		return;
 }
 
-void Vocabulary::lookupSpecificPrefix(Sci::ResultWordList &word_list, const char *word, int word_len, Sci::ResultWordList &retval, unsigned char prefix, const char *meaning) {
+bool Vocabulary::lookupSpecificPrefix(ResultWordListList &parent_retval, ResultWordList &retval, const char *word, int word_len, unsigned char prefix, const char *meaning) {
+	if (!_parserWords.contains(meaning)) {
+		warning("Vocabulary::lookupSpecificPrefix: _parserWords doesn't contains '%s'", meaning);
+		return false;
+	}
 	if ((unsigned char)word[0] == prefix) {
+		ResultWordList word_list;
 		lookupWord(word_list, word + 1, word_len);
-		if (!word_list.empty() && _parserWords.contains(meaning)) {
-			word_list.push_front(_parserWords[meaning].front());
+		if (!word_list.empty() && word_list.front()._class == VOCAB_CLASS_NOUN << 4) {
+			parent_retval.push_back(_parserWords[meaning]);
 			retval = word_list;
+			return true;
 		}
 	}
+	return false;
 }
 
 void Vocabulary::debugDecipherSaidBlock(const SciSpan<const byte> &data) {
@@ -611,9 +619,9 @@ bool Vocabulary::tokenizeString(ResultWordListList &retval, const char *sentence
 				lookupWord(lookup_result, currentWord, wordLen);
 
 				if (lookup_result.empty()) { // Not found?
-					lookupWordPrefix(lookup_result, currentWord, wordLen);
+					lookupWordPrefix(retval, lookup_result, currentWord, wordLen);
 
-					if (lookup_result.empty()) { // Not found? {
+					if (lookup_result.empty()) { // Still not found? {
 						*error = (char *)calloc(wordLen + 1, 1);
 						strncpy(*error, currentWord, wordLen); // Set the offending word
 						retval.clear();

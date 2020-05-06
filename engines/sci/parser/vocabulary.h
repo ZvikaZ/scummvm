@@ -209,16 +209,27 @@ public:
 	void lookupWord(ResultWordList &retval, const char *word, int word_len);
 
 	/**
-	 * Looks up a single word in the words list, taking into account suffixes
+	 * Looks up a single word in the words list, taking into account suffixes, and updating parent_retval if finding matching prefix
 	 * Note: there is no equivalent in Sierra SCI, added to support specific languages translations
-	 * @param retval	the list of matches
-	 * @param word		pointer to the word to look up
-	 * @param word_len	length of the word to look up
+	 * For other languages, does nothing
+	 * @param parent_retval		parent's function list of matches
+	 * @param retval			the list of matches
+	 * @param word				pointer to the word to look up
+	 * @param word_len			length of the word to look up
 	 */
-	void lookupWordPrefix(ResultWordList &retval, const char *word, int word_len);
+	void lookupWordPrefix(ResultWordListList &parent_retval, ResultWordList &retval, const char *word, int word_len);
 
-	//TODO: document
-	void lookupSpecificPrefix(Sci::ResultWordList &word_list, const char *word, int word_len, Sci::ResultWordList &retval, unsigned char prefix, const char *meaning);
+	/**
+	 * Helper function for lookupWordPrefix, checking specific prefix for match
+	 * @param parent_retval		lookupWordPrefix's parent's function list of matches
+	 * @param retval			lookupWordPrefix's list of matches
+	 * @param word				pointer to the word to look up
+	 * @param word_len			length of the word to look up
+	 * @param prefix			the prefix to look for in the word
+	 * @param meaning			the meaning of that prefix
+	 * @return true on prefix match, false on prefix not matching
+	 */
+	bool lookupSpecificPrefix(ResultWordListList &parent_retval, ResultWordList &retval, const char *word, int word_len, unsigned char prefix, const char *meaning);
 
 
 	/**
