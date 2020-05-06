@@ -564,7 +564,7 @@ void GfxText16::Box(const char *text, uint16 languageSplitter, bool show, const 
 			break;
 		Width(curTextLine, 0, charCount, fontId, textWidth, textHeight, true);
 		maxTextWidth = MAX<int16>(maxTextWidth, textWidth);
-		if (g_sci->getLanguage() != Common::HE_ISR) {  // i.e. regular Left To Right direction
+		if (g_sci->isLanguageLTR()) {
 			switch (alignment) {
 			case SCI_TEXT16_ALIGNMENT_RIGHT:
 				offset = rect.width() - textWidth;
@@ -599,7 +599,7 @@ void GfxText16::Box(const char *text, uint16 languageSplitter, bool show, const 
 		_ports->moveTo(rect.left + offset, rect.top + hline);
 
 		Common::String textString;
-		if (g_sci->getLanguage() == Common::HE_ISR) {
+		if (!g_sci->isLanguageLTR()) {
 			const char *curTextLineOrig = curTextLine;
 			Common::String textLogical = Common::String(curTextLineOrig, (uint32)charCount);
 			textString = TransMan.convertBiDiString(textLogical, g_sci->getLanguage());

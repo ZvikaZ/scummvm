@@ -271,6 +271,7 @@ public:
 	const SciGameId &getGameId() const { return _gameId; }
 	const char *getGameIdStr() const;
 	Common::Language getLanguage() const;
+	bool isLanguageLTR() const;		// true if language's direction is from Left To Right
 	Common::Platform getPlatform() const;
 	bool isDemo() const;
 	bool isCD() const;

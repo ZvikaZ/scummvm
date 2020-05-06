@@ -784,6 +784,10 @@ Common::Language SciEngine::getLanguage() const {
 	return _gameDescription->language;
 }
 
+bool SciEngine::isLanguageLTR() const {
+	return getLanguage() != Common::HE_ISR;
+}
+
 Common::Platform SciEngine::getPlatform() const {
 	return _gameDescription->platform;
 }
