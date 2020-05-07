@@ -80,7 +80,7 @@ public:
 
 	byte *data();
 
-	bool isActive();
+	bool isActive(Sci::EngineState *s);
 
 	void advance(int offset);
 

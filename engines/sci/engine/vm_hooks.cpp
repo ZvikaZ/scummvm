@@ -76,7 +76,7 @@ static const byte qfg1_die_after_running_on_ice[] = {
 // SCI0 Hebrew translations need to modify and relocate the "Enter input:" prompt
 // currently SQ3 is the only Hebrew SCI0 game, but this patch should work for the future games as well
 
-static const byte sci0_hebrew_input_prompt[] = {
+static const byte OLD_sci0_hebrew_input_prompt[] = {
 	0x38, 0xe9, 0,			// pushi    #prompt
 	0x39, 1,				// pushi    1
 	0x39, 3,				// pushi    3
@@ -89,6 +89,91 @@ static const byte sci0_hebrew_input_prompt[] = {
 	0x4a, 6,				// send     6	
 };
 
+static const byte sci0_hebrew_input_prompt[] = {
+	// in (procedure (Print ...
+	// ...
+	// 			(#edit
+	// 				(++ paramCnt)
+	// adding:
+	//				(hDText moveTo: 104 4)
+	//				(= hDText (DText new:))
+	//				(hDText
+	//					text: ''
+	//					moveTo: 4 4
+	//					font: gDefaultFont
+	//					setSize:
+	//				)					
+	//				(hDialog add: hDText)
+	0x38, 0x92, 0,			// pushi    #moveTo
+	0x39, 2, 				// pushi    2
+	0x38, 104, 0,			// pushi    104
+	0x39, 4, 				// pushi    4
+	0x85, 1,				// lat      temp1
+	0x4a, 8,				// send     8
+	0x38, 0x59, 0,			// pushi    #new
+	0x39, 0, 				// pushi    0
+	0x51, 0xd,				// class    DText
+	0x4a, 4,				// send     4
+	0xa5, 1,				// sat      temp1
+	0x39, 0x1a,				// pushi    #text
+	0x39, 1,				// pushi    1
+	0x75, 25,				// lofss    ''	; that location has '\0'
+	0x38, 146, 0,			// pushi    146
+	0x39, 2,				// pushi    2
+	0x39, 4,				// pushi    4
+	0x39, 4,				// pushi    4
+	0x39, 33,				// pushi    33
+	0x39, 1,				// pushi    1
+	0x89, 0x16,				// lsg      global22
+	0x38, 144, 0,			// pushi    144
+	0x39, 0,				// pushi    0
+	0x85, 1,				// lat      temp1
+	0x4a, 24,				// send     24
+	0x38, 0x64, 0,			// pushi    #add
+	0x39, 1, 				// pushi    1
+	0x8d, 1,				// lst      temp1
+	0x85, 0,				// lat      temp0
+	0x4a, 6,				// send     6
+	0x85, 5					// lat      temp5
+
+
+	/*
+	// in (procedure (Print ...
+	// ...
+	// 			(#edit
+	// 				(++ paramCnt)
+	// adding:
+	// 				(hDText moveTo: 104 4)
+	// 				(= hDText (DText new:))
+	// 				(hDText moveTo: 4 14)
+	// 				(hDialog add: hDText)
+	// 
+	0x38, 0x92, 0,			// pushi    #moveTo
+	0x39, 2, 				// pushi    2
+	0x38, 104, 0,			// pushi    104
+	0x39, 4, 				// pushi    4
+	0x85, 1,				// lat      temp1
+	0x4a, 8,				// send     8
+	0x38, 0x59, 0,			// pushi    #new
+	0x39, 0, 				// pushi    0
+	0x51, 0xd,				// class    DText
+	0x4a, 4,				// send     4
+	0xa5, 1,				// sat      temp1
+	0x38, 0x92, 0,			// pushi    #moveTo
+	0x39, 2, 				// pushi    2
+	0x39, 4, 				// pushi    4
+	0x39, 14, 				// pushi    14
+	0x85, 1,				// lat      temp1
+	0x4a, 8,				// send     8
+	0x38, 0x64, 0,			// pushi    #add
+	0x39, 1, 				// pushi    1
+	0x8d, 1,				// lst      temp1
+	0x85, 0,				// lat      temp0
+	0x4a, 6					// send     6
+	*/
+};
+
+
 
 /** Write here all games hooks
  *  From this we'll build _hooksMap, which contains only relevant hooks to current game
@@ -100,8 +185,9 @@ static const byte sci0_hebrew_input_prompt[] = {
  */
 static const GeneralHookEntry allGamesHooks[] = {
 	// GID, script, PC.offset, objName,  selector,  externID, opcode,  hook array
-	{GID_QFG1, {58,  0x144d}, {"egoRuns", "changeState", -1 , "push0", HOOKARRAY(qfg1_die_after_running_on_ice)}}
+	{GID_QFG1, {58,  0x144d}, {"egoRuns", "changeState", -1 , "push0", HOOKARRAY(qfg1_die_after_running_on_ice)}},
 	// TODO: only Hebrew...
+	{GID_SQ3,  {255, 0x1103}, {"User",    "",            -1 , "pushi", HOOKARRAY(sci0_hebrew_input_prompt)}}
 	//{GID_SQ3,  {994, 0x2bd},  {"SQ3",     "init",        -1 , "class", HOOKARRAY(sci0_hebrew_input_prompt)}}
 	// {GID_SQ3,  {994, 0x2c1},  {"SQ3",     "init",        -1 , "ret", HOOKARRAY(sci0_hebrew_input_prompt)}}
 };
@@ -186,8 +272,9 @@ byte *VmHooks::data() {
 	return _hookScriptData.data() + _location;
 }
 
-bool VmHooks::isActive() {
-	return !_hookScriptData.empty();
+bool VmHooks::isActive(Sci::EngineState *s) {
+	// if PC has changed, then we're temporary inactive - went to some other call, or send, etc.
+	return !_hookScriptData.empty() && _lastPc == s->xs->addr.pc;
 }
 
 void VmHooks::advance(int offset) {
