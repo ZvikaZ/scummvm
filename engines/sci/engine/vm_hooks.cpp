@@ -76,19 +76,6 @@ static const byte qfg1_die_after_running_on_ice[] = {
 // SCI0 Hebrew translations need to modify and relocate the "Enter input:" prompt
 // currently SQ3 is the only Hebrew SCI0 game, but this patch should work for the future games as well
 
-static const byte OLD_sci0_hebrew_input_prompt[] = {
-	0x38, 0xe9, 0,			// pushi    #prompt
-	0x39, 1,				// pushi    1
-	0x39, 3,				// pushi    3
-	0x39, 2,				// pushi    2	; room 2
-	0x39, 0,				// pushi    0	; message 0
-	0x39, 0,				// pushi    0
-	0x43, 0x4d, 6,  		// callk    GetFarText,  6
-	0x37,					// push    
-	0x51, 0x2b,				// class    User
-	0x4a, 6,				// send     6	
-};
-
 static const byte sci0_hebrew_input_prompt[] = {
 	// in (procedure (Print ...
 	// ...
@@ -106,8 +93,8 @@ static const byte sci0_hebrew_input_prompt[] = {
 	//				(hDialog add: hDText)
 	0x38, 0x92, 0,			// pushi    #moveTo
 	0x39, 2, 				// pushi    2
-	0x38, 104, 0,			// pushi    104
-	0x39, 4, 				// pushi    4
+	0x38, 210, 0,			// pushi    220		;x
+	0x39, 4, 				// pushi    4		;y
 	0x85, 1,				// lat      temp1
 	0x4a, 8,				// send     8
 	0x38, 0x59, 0,			// pushi    #new
@@ -120,8 +107,8 @@ static const byte sci0_hebrew_input_prompt[] = {
 	0x75, 25,				// lofss    ''	; that location has '\0'
 	0x38, 146, 0,			// pushi    146
 	0x39, 2,				// pushi    2
-	0x39, 4,				// pushi    4
-	0x39, 4,				// pushi    4
+	0x39, 4,				// pushi    4		;x
+	0x39, 14,				// pushi    12		;y
 	0x39, 33,				// pushi    33
 	0x39, 1,				// pushi    1
 	0x89, 0x16,				// lsg      global22
@@ -135,42 +122,6 @@ static const byte sci0_hebrew_input_prompt[] = {
 	0x85, 0,				// lat      temp0
 	0x4a, 6,				// send     6
 	0x85, 5					// lat      temp5
-
-
-	/*
-	// in (procedure (Print ...
-	// ...
-	// 			(#edit
-	// 				(++ paramCnt)
-	// adding:
-	// 				(hDText moveTo: 104 4)
-	// 				(= hDText (DText new:))
-	// 				(hDText moveTo: 4 14)
-	// 				(hDialog add: hDText)
-	// 
-	0x38, 0x92, 0,			// pushi    #moveTo
-	0x39, 2, 				// pushi    2
-	0x38, 104, 0,			// pushi    104
-	0x39, 4, 				// pushi    4
-	0x85, 1,				// lat      temp1
-	0x4a, 8,				// send     8
-	0x38, 0x59, 0,			// pushi    #new
-	0x39, 0, 				// pushi    0
-	0x51, 0xd,				// class    DText
-	0x4a, 4,				// send     4
-	0xa5, 1,				// sat      temp1
-	0x38, 0x92, 0,			// pushi    #moveTo
-	0x39, 2, 				// pushi    2
-	0x39, 4, 				// pushi    4
-	0x39, 14, 				// pushi    14
-	0x85, 1,				// lat      temp1
-	0x4a, 8,				// send     8
-	0x38, 0x64, 0,			// pushi    #add
-	0x39, 1, 				// pushi    1
-	0x8d, 1,				// lst      temp1
-	0x85, 0,				// lat      temp0
-	0x4a, 6					// send     6
-	*/
 };
 
 
@@ -232,12 +183,18 @@ bool hook_exec_match(Sci::EngineState *s, HookEntry entry) {
 }
 
 static reg_t old_value = NULL_REG;
+static bool just_finished = false;
 
 void VmHooks::vm_hook_before_exec(Sci::EngineState *s) {
+	if (just_finished) {
+		just_finished = false;
+		_lastPc = NULL_REG;
+		return;
+	}
 	Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
 	int scriptNumber = scr->getScriptNumber();
 	HookHashKey key = { scriptNumber, s->xs->addr.pc.getOffset() };
-	if (_lastPc != s->xs->addr.pc && _hooksMap.contains(key)) {
+	if (_hookScriptData.empty() && _lastPc != s->xs->addr.pc && _hooksMap.contains(key)) {
 		_lastPc = s->xs->addr.pc;
 		HookEntry entry = _hooksMap[key];
 		if (hook_exec_match(s, entry)) {
@@ -285,6 +242,7 @@ void VmHooks::advance(int offset) {
 		error("VmHooks: requested to change offset after end of patch");
 	else if ((uint)newLocation == _hookScriptData.size()) {
 		_hookScriptData.clear();
+		just_finished = true;
 		_location = 0;
 	} else
 		_location = newLocation;
