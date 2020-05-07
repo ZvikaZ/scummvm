@@ -493,7 +493,7 @@ void Vocabulary::lookupWordPrefix(ResultWordListList &parent_retval, ResultWordL
 
 	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xe1, "~~~hebrew-prefix-bet"))			// "Bet"
 		return;
-	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xe4, "the"))					// "He Hayedia"
+	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xe4, "the"))							// "He Hayedia"
 		return;
 	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xec, "~~~hebrew-prefix-lamed"))		// "Lamed"
 		return;

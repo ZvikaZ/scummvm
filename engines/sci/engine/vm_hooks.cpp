@@ -20,6 +20,9 @@
  *
  */
 
+//DONT COMMIT:
+#include "sci/console.h"
+
 #include "common/hashmap.h"
 #include "common/array.h"
 #include "sci/engine/vm_hooks.h"
@@ -36,6 +39,7 @@ namespace Sci {
  * Note that when using hooks, the regular PC is frozen, and doesn't advance.
  * Therefore, 'jmp', 'bt' and 'bnt' are used to locally move around inside the patch.
  * call* opcodes can be used - but they should be last executed opcode, in order to successfully transfer control.
+ *		- except callk, which can be freely used, as it doesn't change the PC
  *
  ******************************************************************************************************************/
 
@@ -68,6 +72,24 @@ static const byte qfg1_die_after_running_on_ice[] = {
 	0x47, 0x00, 0x01, 0x10         // calle proc0_1
 };
 
+
+// SCI0 Hebrew translations need to modify and relocate the "Enter input:" prompt
+// currently SQ3 is the only Hebrew SCI0 game, but this patch should work for the future games as well
+
+static const byte sci0_hebrew_input_prompt[] = {
+	0x38, 0xe9, 0,			// pushi    #prompt
+	0x39, 1,				// pushi    1
+	0x39, 3,				// pushi    3
+	0x39, 2,				// pushi    2	; room 2
+	0x39, 0,				// pushi    0	; message 0
+	0x39, 0,				// pushi    0
+	0x43, 0x4d, 6,  		// callk    GetFarText,  6
+	0x37,					// push    
+	0x51, 0x2b,				// class    User
+	0x4a, 6,				// send     6	
+};
+
+
 /** Write here all games hooks
  *  From this we'll build _hooksMap, which contains only relevant hooks to current game
  *  The match is performed according to PC, script number, opcode (only opcode name, as seen in ScummVM debugger),
@@ -77,8 +99,11 @@ static const byte qfg1_die_after_running_on_ice[] = {
  *		= in that case, if objName == "" it will be ignored, otherwise, it will be also used to match
  */
 static const GeneralHookEntry allGamesHooks[] = {
-	// GID, script, PC.offset, objName,  selector, externID, opcode,  hook array
-	{GID_QFG1, {58, 0x144d}, {"egoRuns", "changeState", -1 , "push0", HOOKARRAY(qfg1_die_after_running_on_ice)}}
+	// GID, script, PC.offset, objName,  selector,  externID, opcode,  hook array
+	{GID_QFG1, {58,  0x144d}, {"egoRuns", "changeState", -1 , "push0", HOOKARRAY(qfg1_die_after_running_on_ice)}}
+	// TODO: only Hebrew...
+	//{GID_SQ3,  {994, 0x2bd},  {"SQ3",     "init",        -1 , "class", HOOKARRAY(sci0_hebrew_input_prompt)}}
+	// {GID_SQ3,  {994, 0x2c1},  {"SQ3",     "init",        -1 , "ret", HOOKARRAY(sci0_hebrew_input_prompt)}}
 };
 
 
@@ -120,6 +145,7 @@ bool hook_exec_match(Sci::EngineState *s, HookEntry entry) {
 		s->xs->debugExportId == entry.exportId && strcmp(entry.opcodeName, opcodeNames[opcode]) == 0;
 }
 
+static reg_t old_value = NULL_REG;
 
 void VmHooks::vm_hook_before_exec(Sci::EngineState *s) {
 	Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
@@ -136,6 +162,23 @@ void VmHooks::vm_hook_before_exec(Sci::EngineState *s) {
 		} else {
 			debugC(kDebugLevelPatcher, "vm_hook: failed to match! script: %d, PC: %04x:%04x, obj: %s, selector: %s, extern: %d, opcode: %s", scriptNumber, PRINT_REG(s->xs->addr.pc), entry.objName, entry.selector.c_str(), entry.exportId, entry.opcodeName);
 		}
+	}
+}
+
+void debug_selector(Sci::EngineState *s) {
+	const char *object = "User";
+	const char *selector_name = "prompt";
+
+	reg_t addr = s->_segMan->findObjectByName(object, 0);
+	const Object *obj = s->_segMan->getObject(addr);
+	const Selector selector = g_sci->getKernel()->findSelector(selector_name);
+	const int index = obj->locateVarSelector(s->_segMan, selector);
+	const reg_t value = obj->getVariable(index);
+	if (value != old_value) {
+		Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
+		int scriptNumber = scr->getScriptNumber();
+		debug("script: %d, PC: %04x:%04x, old PC: %x value changed from %04x:%04x to %04x:%04x", scriptNumber, PRINT_REG(s->xs->addr.pc), g_sci->_debugState.old_pc_offset, PRINT_REG(old_value), PRINT_REG(value));
+		old_value = value;
 	}
 }
 

@@ -380,12 +380,21 @@ static const byte pq4EnhancedAudioToggleView[] = {
 	END
 };
 
+static const byte sq3HebrewEnterInput[] = {
+	SKIP(0x507),
+	REPLACE(11, 0xe4, 0xf7, 0xf9, 0x20, 0xf4, 0xf7, 0xe5, 0xe3, 0xe4, 0x3a, 0),
+	END
+};
+
+
 #pragma mark -
 #pragma mark Patch table
 
 static const GameResourcePatch resourcePatches[] = {
 	{ GID_PHANTASMAGORIA, Common::UNK_LANG, ResourceId(kResourceTypeView, 64001), phant1View64001Palette,     false },
-	{ GID_PQ4,            Common::EN_ANY,   ResourceId(kResourceTypeView, 10988), pq4EnhancedAudioToggleView, true }
+	{ GID_PQ4,            Common::EN_ANY,   ResourceId(kResourceTypeView, 10988), pq4EnhancedAudioToggleView, true },
+	{ GID_SQ3,			  Common::HE_ISR,   ResourceId(kResourceTypeScript, 996), sq3HebrewEnterInput,        false }
+
 };
 
 #pragma mark -
