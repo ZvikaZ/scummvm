@@ -497,6 +497,8 @@ void Vocabulary::lookupWordPrefix(ResultWordListList &parent_retval, ResultWordL
 		return;
 	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xec, "~~~hebrew-prefix-lamed"))		// "Lamed"
 		return;
+	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xed, "~~~hebrew-prefix-mem"))			// "Mem"
+		return;
 }
 
 bool Vocabulary::lookupSpecificPrefix(ResultWordListList &parent_retval, ResultWordList &retval, const char *word, int word_len, unsigned char prefix, const char *meaning) {

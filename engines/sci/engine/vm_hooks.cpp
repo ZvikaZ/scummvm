@@ -39,8 +39,8 @@ namespace Sci {
  * This mechanism allows inserting new instructions, and not only replace existing code.
  * Note that when using hooks, the regular PC is frozen, and doesn't advance.
  * Therefore, 'jmp', 'bt' and 'bnt' are used to locally move around inside the patch.
- * call* opcodes can be used - but they should be last executed opcode, in order to successfully transfer control.
- *		- except callk, which can be freely used, as it doesn't change the PC
+ *
+ * (In the past there was a warning regarding 'call's - but they should work now)
  *
  ******************************************************************************************************************/
 
