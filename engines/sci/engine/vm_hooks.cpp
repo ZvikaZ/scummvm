@@ -25,6 +25,7 @@
 
 #include "common/hashmap.h"
 #include "common/array.h"
+#include "common/language.h"
 #include "sci/engine/vm_hooks.h"
 #include "sci/engine/vm.h"
 #include "sci/engine/state.h"
@@ -134,13 +135,12 @@ static const byte sci0_hebrew_input_prompt[] = {
  *  - external function ID  (and then selector is "")
  *		= in that case, if objName == "" it will be ignored, otherwise, it will be also used to match
  */
+
+static Common::Language la[] = { Common::HE_ISR };
 static const GeneralHookEntry allGamesHooks[] = {
-	// GID, script, PC.offset, objName,  selector,  externID, opcode,  hook array
-	{GID_QFG1, {58,  0x144d}, {"egoRuns", "changeState", -1 , "push0", HOOKARRAY(qfg1_die_after_running_on_ice)}},
-	// TODO: only Hebrew...
-	{GID_SQ3,  {255, 0x1103}, {"User",    "",            -1 , "pushi", HOOKARRAY(sci0_hebrew_input_prompt)}}
-	//{GID_SQ3,  {994, 0x2bd},  {"SQ3",     "init",        -1 , "class", HOOKARRAY(sci0_hebrew_input_prompt)}}
-	// {GID_SQ3,  {994, 0x2c1},  {"SQ3",     "init",        -1 , "ret", HOOKARRAY(sci0_hebrew_input_prompt)}}
+	// GID, script, lang,        PC.offset, objName,  selector,  externID, opcode,  hook array
+	{GID_QFG1, Common::UNK_LANG, {58,  0x144d}, {"egoRuns", "changeState", -1 , "push0", HOOKARRAY(qfg1_die_after_running_on_ice)}},
+	{GID_SQ3,  Common::HE_ISR,   {255, 0x1103}, {"User",    "",            -1 , "pushi", HOOKARRAY(sci0_hebrew_input_prompt)}}
 };
 
 
@@ -148,7 +148,8 @@ VmHooks::VmHooks() {
 	// build _hooksMap
 	for (uint i = 0; i < ARRAYSIZE(allGamesHooks); i++) {
 		if (allGamesHooks[i].gameId == g_sci->getGameId())
-			_hooksMap.setVal(allGamesHooks[i].key, allGamesHooks[i].entry);
+			if (allGamesHooks[i].language == g_sci->getLanguage() || allGamesHooks[i].language == Common::UNK_LANG)
+				_hooksMap.setVal(allGamesHooks[i].key, allGamesHooks[i].entry);
 	}
 
 	_lastPc = NULL_REG;

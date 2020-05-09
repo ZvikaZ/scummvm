@@ -61,6 +61,7 @@ struct HookEntry {
 /** Used for allGamesHooks - from it we build the specific _hooksMap */
 struct GeneralHookEntry {
 	SciGameId gameId;
+	Common::Language language;			// language to be patched. UNK_LANG means to patch all languages
 	HookHashKey key;
 	HookEntry entry;
 };
