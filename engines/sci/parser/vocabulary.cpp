@@ -491,13 +491,13 @@ void Vocabulary::lookupWordPrefix(ResultWordListList &parent_retval, ResultWordL
 	if (--word_len <= 0)
 		return;
 
-	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xe1, "~~~hebrew-prefix-bet"))			// "Bet"
+	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xe1, "1hebrew1prefix1bet"))			// "Bet"
 		return;
 	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xe4, "the"))							// "He Hayedia"
 		return;
-	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xec, "~~~hebrew-prefix-lamed"))		// "Lamed"
+	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xec, "1hebrew1prefix1lamed"))			// "Lamed"
 		return;
-	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xed, "~~~hebrew-prefix-mem"))			// "Mem"
+	if (lookupSpecificPrefix(parent_retval, retval, word, word_len, 0xee, "1hebrew1prefix1mem"))			// "Mem"
 		return;
 }
 
@@ -509,11 +509,12 @@ bool Vocabulary::lookupSpecificPrefix(ResultWordListList &parent_retval, ResultW
 	if ((unsigned char)word[0] == prefix) {
 		ResultWordList word_list;
 		lookupWord(word_list, word + 1, word_len);
-		if (!word_list.empty() && word_list.front()._class == VOCAB_CLASS_NOUN << 4) {
-			parent_retval.push_back(_parserWords[meaning]);
-			retval = word_list;
-			return true;
-		}
+		if (!word_list.empty())
+			if (word_list.front()._class == VOCAB_CLASS_NOUN << 4 || word_list.front()._class == VOCAB_CLASS_PREPOSITION << 4) {
+				parent_retval.push_back(_parserWords[meaning]);
+				retval = word_list;
+				return true;
+			}
 	}
 	return false;
 }
