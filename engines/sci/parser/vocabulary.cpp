@@ -251,8 +251,15 @@ bool Vocabulary::loadSuffixes() {
 
 		_parserSuffixes.push_back(suffix);
 	}
+	appendSuffixes();
 
 	return true;
+}
+
+void Vocabulary::appendSuffixes() {
+	if (g_sci->getLanguage() == Common::HE_ISR) {
+		_parserSuffixes.push_back({0x10, 0x10, 1, 0, "\xea", ""});		// get rid of Kaf Sofit
+	}
 }
 
 void Vocabulary::freeSuffixes() {

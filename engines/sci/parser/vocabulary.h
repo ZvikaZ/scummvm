@@ -348,6 +348,11 @@ private:
 	bool loadSuffixes();
 
 	/**
+	 * Appends required suffixes for specific languages
+	 */
+	void appendSuffixes();
+
+	/**
 	 * Frees all suffixes in the given list.
 	 * @param suffixes: The suffixes to free
 	 */
