@@ -99,8 +99,6 @@ private:
 };
 
 
-void debug_selector(Sci::EngineState *s);
-
 } // End of namespace Sci
 
 #endif // SCI_ENGINE_VM_HOOKS_H

@@ -380,7 +380,7 @@ static const byte pq4EnhancedAudioToggleView[] = {
 	END
 };
 
-// TODO: move to regular script patcher
+// TODO: document
 static const byte sq3HebrewEnterInput[] = {
 	SKIP(0x507),
 	REPLACE(11, 0xe4, 0xf7, 0xf9, 0x20, 0xf4, 0xf7, 0xe5, 0xe3, 0xe4, 0x3a, 0),

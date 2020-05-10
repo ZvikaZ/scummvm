@@ -20,9 +20,6 @@
  *
  */
 
-//DONT COMMIT:
-#include "sci/console.h"
-
 #include "common/hashmap.h"
 #include "common/array.h"
 #include "common/language.h"
@@ -136,7 +133,6 @@ static const byte sci0_hebrew_input_prompt[] = {
  *		= in that case, if objName == "" it will be ignored, otherwise, it will be also used to match
  */
 
-static Common::Language la[] = { Common::HE_ISR };
 static const GeneralHookEntry allGamesHooks[] = {
 	// GID, script, lang,        PC.offset, objName,  selector,  externID, opcode,  hook array
 	{GID_QFG1, Common::UNK_LANG, {58,  0x144d}, {"egoRuns", "changeState", -1 , "push0", HOOKARRAY(qfg1_die_after_running_on_ice)}},
@@ -183,8 +179,7 @@ bool hook_exec_match(Sci::EngineState *s, HookEntry entry) {
 		s->xs->debugExportId == entry.exportId && strcmp(entry.opcodeName, opcodeNames[opcode]) == 0;
 }
 
-static reg_t old_value = NULL_REG;
-static bool just_finished = false;
+static bool just_finished = false;	//TODO: move to class
 
 void VmHooks::vm_hook_before_exec(Sci::EngineState *s) {
 	if (just_finished) {
@@ -206,23 +201,6 @@ void VmHooks::vm_hook_before_exec(Sci::EngineState *s) {
 		} else {
 			debugC(kDebugLevelPatcher, "vm_hook: failed to match! script: %d, PC: %04x:%04x, obj: %s, selector: %s, extern: %d, opcode: %s", scriptNumber, PRINT_REG(s->xs->addr.pc), entry.objName, entry.selector.c_str(), entry.exportId, entry.opcodeName);
 		}
-	}
-}
-
-void debug_selector(Sci::EngineState *s) {
-	const char *object = "User";
-	const char *selector_name = "prompt";
-
-	reg_t addr = s->_segMan->findObjectByName(object, 0);
-	const Object *obj = s->_segMan->getObject(addr);
-	const Selector selector = g_sci->getKernel()->findSelector(selector_name);
-	const int index = obj->locateVarSelector(s->_segMan, selector);
-	const reg_t value = obj->getVariable(index);
-	if (value != old_value) {
-		Script *scr = s->_segMan->getScript(s->xs->addr.pc.getSegment());
-		int scriptNumber = scr->getScriptNumber();
-		debug("script: %d, PC: %04x:%04x, old PC: %x value changed from %04x:%04x to %04x:%04x", scriptNumber, PRINT_REG(s->xs->addr.pc), g_sci->_debugState.old_pc_offset, PRINT_REG(old_value), PRINT_REG(value));
-		old_value = value;
 	}
 }
 

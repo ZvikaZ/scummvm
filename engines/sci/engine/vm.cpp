@@ -1443,9 +1443,6 @@ void run_vm(EngineState *s) {
 
 		} // switch (opcode)
 
-		// debug_selector(s);
-
-
 		if (s->_executionStackPosChanged) // Force initialization
 			s->xs = xs_new;
 
