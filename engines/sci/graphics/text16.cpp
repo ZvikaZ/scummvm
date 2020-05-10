@@ -507,13 +507,13 @@ void GfxText16::Draw(const char *text, int16 from, int16 len, GuiResourceId orgF
 			charWidth = _font->getCharWidth(curChar);
 			// clear char
 			if (_ports->_curPort->penMode == 1) {
-				rect.left = _ports->_curPort->curLeft;
-				rect.right = rect.left + charWidth;
+				rect.left = _ports->_curPort->curLeft;		//Zvika - fix that for RTL
+				rect.right = rect.left + charWidth;		//Zvika - fix that for RTL
 				_paint16->eraseRect(rect);
 			}
 			// CharStd
 			_font->draw(curChar, _ports->_curPort->top + _ports->_curPort->curTop, _ports->_curPort->left + _ports->_curPort->curLeft, _ports->_curPort->penClr, _ports->_curPort->greyedOutput);
-			_ports->_curPort->curLeft += charWidth;
+			_ports->_curPort->curLeft += charWidth;			//Zvika - fix that for RTL
 		}
 	}
 }
