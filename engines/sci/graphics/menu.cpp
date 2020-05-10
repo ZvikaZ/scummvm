@@ -355,7 +355,10 @@ void GfxMenu::drawBar() {
 	_paint16->fillRect(_ports->_menuBarRect, 1, _screen->getColorWhite());
 	_paint16->fillRect(_ports->_menuLine, 1, 0);
 	_ports->penColor(0);
-	_ports->moveTo(8, 1);
+	if (g_sci->isLanguageLTR())
+		_ports->moveTo(8, 1);
+	else
+		_ports->moveTo(_screen->getWidth() - 38, 1);			//TODO bad
 
 	listIterator = _list.begin();
 	while (listIterator != listEnd) {
@@ -584,19 +587,35 @@ void GfxMenu::drawMenu(uint16 oldMenuId, uint16 newMenuId) {
 	_menuRect.top = _ports->_menuBarRect.bottom;
 	menuTextRect.top = _ports->_menuBarRect.top;
 	menuTextRect.bottom = _ports->_menuBarRect.bottom;
-	menuTextRect.left = menuTextRect.right = 7;
+	if (g_sci->isLanguageLTR())
+		menuTextRect.left = menuTextRect.right = 7;
+	else
+		menuTextRect.left = menuTextRect.right = _ports->_menuBarRect.right - 7;
 	listIterator = _list.begin();
 	while (listIterator != listEnd) {
 		listEntry = *listIterator;
 		listNr++;
-		menuTextRect.left = menuTextRect.right;
-		menuTextRect.right += listEntry->textWidth;
-		if (listNr == newMenuId)
-			_menuRect.left = menuTextRect.left;
+		if (g_sci->isLanguageLTR()) {
+			menuTextRect.left = menuTextRect.right;
+			menuTextRect.right += listEntry->textWidth;
+			if (listNr == newMenuId)
+				_menuRect.left = menuTextRect.left;
+		} else {
+			menuTextRect.right = menuTextRect.left;
+			menuTextRect.left -= listEntry->textWidth;
+			if (listNr == newMenuId)
+				_menuRect.right = menuTextRect.right;
+		}
 		if ((listNr == newMenuId) || (listNr == oldMenuId)) {
-			menuTextRect.translate(1, 0);
-			_paint16->invertRect(menuTextRect);
-			menuTextRect.translate(-1, 0);
+			if (g_sci->isLanguageLTR()) {
+				menuTextRect.translate(1, 0);
+				_paint16->invertRect(menuTextRect);
+				menuTextRect.translate(-1, 0);
+			} else {
+				menuTextRect.translate(-1, 0);
+				_paint16->invertRect(menuTextRect);
+				menuTextRect.translate(1, 0);
+			}
 		}
 
 		listIterator++;
@@ -614,15 +633,25 @@ void GfxMenu::drawMenu(uint16 oldMenuId, uint16 newMenuId) {
 		}
 		listItemIterator++;
 	}
-	_menuRect.right = _menuRect.left + 16 + 4 + 2;
-	_menuRect.right += maxTextWidth + maxTextRightAlignedWidth;
-	if (!maxTextRightAlignedWidth)
-		_menuRect.right -= 5;
+	if (g_sci->isLanguageLTR()) {
+		_menuRect.right = _menuRect.left + 16 + 4 + 2;
+		_menuRect.right += maxTextWidth + maxTextRightAlignedWidth;
+		if (!maxTextRightAlignedWidth)
+			_menuRect.right -= 5;
+	} else {
+		_menuRect.left = _menuRect.right - (16 + 4 + 2);
+		_menuRect.left -= (maxTextWidth + maxTextRightAlignedWidth);
+		if (!maxTextRightAlignedWidth)
+			_menuRect.left += 5;
+	}
 
 	// If part of menu window is outside the screen, move it into the screen
 	// (this happens in multilingual sq3 and lsl3).
 	if (_menuRect.right > _screen->getWidth()) {
 		_menuRect.translate(-(_menuRect.right - _screen->getWidth()), 0);
+	}
+	if (_menuRect.left < 0) {
+		warning("GfxMenu::drawMenu: _menuRect.left < 0");
 	}
 
 	// Save background
@@ -633,7 +662,10 @@ void GfxMenu::drawMenu(uint16 oldMenuId, uint16 newMenuId) {
 	_menuRect.left++; _menuRect.right--; _menuRect.bottom--;
 	_paint16->fillRect(_menuRect, GFX_SCREEN_MASK_VISUAL, _screen->getColorWhite());
 
-	_menuRect.left += 8;
+	if (g_sci->isLanguageLTR())
+		_menuRect.left += 8;
+	else
+		_menuRect.right -= 8;
 	topPos = _menuRect.top + 1;
 	listItemIterator = _itemList.begin();
 	while (listItemIterator != listItemEnd) {
@@ -641,10 +673,17 @@ void GfxMenu::drawMenu(uint16 oldMenuId, uint16 newMenuId) {
 		if (listItemEntry->menuId == newMenuId) {
 			if (!listItemEntry->separatorLine) {
 				_ports->textGreyedOutput(!listItemEntry->enabled);
-				_ports->moveTo(_menuRect.left, topPos);
-				_text16->DrawString(listItemEntry->textSplit.c_str());
-				_ports->moveTo(_menuRect.right - listItemEntry->textRightAlignedWidth - 5, topPos);
-				_text16->DrawString(listItemEntry->textRightAligned.c_str());
+				if (g_sci->isLanguageLTR()) {
+					_ports->moveTo(_menuRect.left, topPos);
+					_text16->DrawString(listItemEntry->textSplit.c_str());
+					_ports->moveTo(_menuRect.right - listItemEntry->textRightAlignedWidth - 5, topPos);
+					_text16->DrawString(listItemEntry->textRightAligned.c_str());
+				} else {
+					_ports->moveTo(_menuRect.left + 5, topPos);
+					_text16->DrawString(listItemEntry->textRightAligned.c_str());
+					_ports->moveTo(_menuRect.right - listItemEntry->textWidth, topPos);
+					_text16->DrawString(listItemEntry->textSplit.c_str());
+				}
 			} else {
 				// We dont 100% follow sierra here, we draw the line from left to right. Looks better
 				// BTW. SCI1.1 seems to put 2 pixels and then skip one, we don't do this at all (lsl6)
@@ -664,8 +703,16 @@ void GfxMenu::drawMenu(uint16 oldMenuId, uint16 newMenuId) {
 	// Draw the black line again
 	_paint16->fillRect(_ports->_menuLine, 1, 0);
 
-	_menuRect.left -= 8;
-	_menuRect.left--; _menuRect.right++; _menuRect.bottom++;
+	if (g_sci->isLanguageLTR()) {
+		_menuRect.left -= 8;
+		_menuRect.left--;
+		_menuRect.right++;
+	} else {
+		_menuRect.right += 8;
+		_menuRect.right--;
+		_menuRect.left++;
+	}
+	_menuRect.bottom++;
 	_paint16->bitsShow(_menuRect);
 }
 
@@ -787,10 +834,22 @@ GuiMenuItemEntry *GfxMenu::interactiveWithKeyboard() {
 					}
 					break;
 				case kSciKeyLeft:
-					newMenuId--; newItemId = 1;
+					if (g_sci->isLanguageLTR()) {
+						newMenuId--;
+						newItemId = 1;
+					} else {
+						newMenuId++;
+						newItemId = 1;
+					}
 					break;
 				case kSciKeyRight:
-					newMenuId++; newItemId = 1;
+					if (g_sci->isLanguageLTR()) {
+						newMenuId++;
+						newItemId = 1;
+					} else {
+						newMenuId--;
+						newItemId = 1;
+					}
 					break;
 				case kSciKeyUp:
 					newItemId--;
