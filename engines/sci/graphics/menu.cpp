@@ -358,12 +358,22 @@ void GfxMenu::drawBar() {
 	if (g_sci->isLanguageLTR())
 		_ports->moveTo(8, 1);
 	else
-		_ports->moveTo(_screen->getWidth() - 38, 1);			//TODO bad
+		_ports->moveTo(_screen->getWidth() - 8, 1);
 
 	listIterator = _list.begin();
 	while (listIterator != listEnd) {
 		listEntry = *listIterator;
+		int16 textWidth;
+		int16 textHeight;
+		if (!g_sci->isLanguageLTR()) {
+			_text16->StringWidth(listEntry->textSplit.c_str(), _text16->GetFontId(), textWidth, textHeight);
+			_ports->_curPort->curLeft -= textWidth;
+		}
+		int16 origCurLeft = _ports->_curPort->curLeft;
+		debug("%d, %d, %d: %s", _ports->_curPort->curLeft, origCurLeft, textWidth, listEntry->textSplit.c_str());
 		_text16->DrawString(listEntry->textSplit.c_str());
+		if (!g_sci->isLanguageLTR())
+			_ports->_curPort->curLeft = origCurLeft;
 
 		listIterator++;
 	}
