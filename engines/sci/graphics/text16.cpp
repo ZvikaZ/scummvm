@@ -24,6 +24,11 @@
 #include "common/stack.h"
 #include "graphics/primitives.h"
 
+//TODO: replace...
+#ifdef USE_TRANSLATION
+#include "common/translation.h"
+#endif
+
 #include "sci/sci.h"
 #include "sci/engine/features.h"
 #include "sci/engine/state.h"
@@ -559,21 +564,47 @@ void GfxText16::Box(const char *text, uint16 languageSplitter, bool show, const 
 			break;
 		Width(curTextLine, 0, charCount, fontId, textWidth, textHeight, true);
 		maxTextWidth = MAX<int16>(maxTextWidth, textWidth);
-		switch (alignment) {
-		case SCI_TEXT16_ALIGNMENT_RIGHT:
-			offset = rect.width() - textWidth;
-			break;
-		case SCI_TEXT16_ALIGNMENT_CENTER:
-			offset = (rect.width() - textWidth) / 2;
-			break;
-		case SCI_TEXT16_ALIGNMENT_LEFT:
-			offset = 0;
-			break;
+		if (g_sci->isLanguageLTR()) {
+			switch (alignment) {
+			case SCI_TEXT16_ALIGNMENT_RIGHT:
+				offset = rect.width() - textWidth;
+				break;
+			case SCI_TEXT16_ALIGNMENT_CENTER:
+				offset = (rect.width() - textWidth) / 2;
+				break;
+			case SCI_TEXT16_ALIGNMENT_LEFT:
+				offset = 0;
+				break;
 
-		default:
-			warning("Invalid alignment %d used in TextBox()", alignment);
+			default:
+				warning("Invalid alignment %d used in TextBox()", alignment);
+			}
+		} else {
+			// Hebrew goes from Right to Left
+			switch (alignment) {
+			case SCI_TEXT16_ALIGNMENT_LEFT:
+				offset = rect.width() - textWidth;
+				break;
+			case SCI_TEXT16_ALIGNMENT_CENTER:
+				offset = (rect.width() - textWidth) / 2;
+				break;
+			case SCI_TEXT16_ALIGNMENT_RIGHT:
+				offset = 0;
+				break;
+
+			default:
+				warning("Invalid alignment %d used in TextBox()", alignment);
+			}
 		}
 		_ports->moveTo(rect.left + offset, rect.top + hline);
+
+		Common::String textString;
+		if (!g_sci->isLanguageLTR()) {
+			const char *curTextLineOrig = curTextLine;
+			Common::String textLogical = Common::String(curTextLineOrig, (uint32)charCount);
+			textString = TransMan.convertBiDiString(textLogical, g_sci->getLanguage());
+			curTextLine = textString.c_str();
+		}
 
 		if (show) {
 			Show(curTextLine, 0, charCount, fontId, previousPenColor);
