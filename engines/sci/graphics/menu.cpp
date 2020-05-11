@@ -1031,7 +1031,14 @@ void GfxMenu::kernelDrawStatus(const char *text, int16 colorPen, int16 colorBack
 
 	_paint16->fillRect(_ports->_menuBarRect, 1, colorBack);
 	_ports->penColor(colorPen);
-	_ports->moveTo(0, 1);
+	if (g_sci->isLanguageLTR()) {
+		_ports->moveTo(0, 1);
+	} else {
+		int16 textWidth;
+		int16 textHeight;
+		_text16->StringWidth(text, _text16->GetFontId(), textWidth, textHeight);
+		_ports->moveTo(_screen->getWidth() - textWidth, 1);
+	}
 	_text16->DrawStatus(text);
 	_paint16->bitsShow(_ports->_menuBarRect);
 	// Also draw the line under the status bar. Normally, this is never drawn,
