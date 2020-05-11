@@ -602,7 +602,7 @@ void GfxText16::Box(const char *text, uint16 languageSplitter, bool show, const 
 		if (!g_sci->isLanguageLTR()) {
 			const char *curTextLineOrig = curTextLine;
 			Common::String textLogical = Common::String(curTextLineOrig, (uint32)charCount);
-			textString = TransMan.convertBiDiString(textLogical, g_sci->getLanguage());
+			textString = TransMan.convertBiDiString(textLogical, g_sci->getLanguage());		// maybe move to Draw()?
 			curTextLine = textString.c_str();
 		}
 
@@ -649,8 +649,15 @@ void GfxText16::DrawString(const Common::String &text) {
 
 // we need to have a separate status drawing code
 //  In KQ4 the IV char is actually 0xA, which would otherwise get considered as linebreak and not printed
-void GfxText16::DrawStatus(const Common::String &str) {
+void GfxText16::DrawStatus(const Common::String &strOrig) {
 	uint16 curChar, charWidth;
+
+	Common::String str;
+	if (g_sci->isLanguageLTR())
+		str = strOrig;
+	else
+		str = TransMan.convertBiDiString(strOrig, g_sci->getLanguage());
+
 	const byte *text = (const byte *)str.c_str();
 	uint16 textLen = str.size();
 	Common::Rect rect;

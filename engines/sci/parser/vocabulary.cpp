@@ -258,7 +258,18 @@ bool Vocabulary::loadSuffixes() {
 
 void Vocabulary::appendSuffixes() {
 	if (g_sci->getLanguage() == Common::HE_ISR) {
-		_parserSuffixes.push_back({0x10, 0x10, 1, 0, "\xea", ""});		// get rid of Kaf Sofit
+		for (int i = 0; i < 2; i++) {
+			int cls;
+			if (i == 0)
+				cls = VOCAB_CLASS_PREPOSITION << 4;
+			else
+				cls = VOCAB_CLASS_NOUN << 4;
+			_parserSuffixes.push_back({ cls, cls, 1, 0, "\xea", "" });					// get rid of Kaf Sofit
+			_parserSuffixes.push_back({ cls, cls, 2, 0, "\xe9\xed", "" });				// get rid of Yud, Mem Sofit
+			_parserSuffixes.push_back({ cls, cls, 2, 0, "\xe5\xfa", "" });				// get rid of Vav, Taf
+			_parserSuffixes.push_back({ cls, cls, 3, 2, "\xe9\xe5\xfa", "\xe9\xfa" });	// Yud, Vav, Taf -> Yud, Taf
+			_parserSuffixes.push_back({ cls, cls, 3, 2, "\xe0\xe5\xfa", "\xe0\xe4" });	// Alef, Vav, Taf -> Alef, He
+		}
 	}
 }
 
