@@ -370,7 +370,6 @@ void GfxMenu::drawBar() {
 			_ports->_curPort->curLeft -= textWidth;
 		}
 		int16 origCurLeft = _ports->_curPort->curLeft;
-		debug("%d, %d, %d: %s", _ports->_curPort->curLeft, origCurLeft, textWidth, listEntry->textSplit.c_str());
 		_text16->DrawString(listEntry->textSplit.c_str());
 		if (!g_sci->isLanguageLTR())
 			_ports->_curPort->curLeft = origCurLeft;
@@ -758,15 +757,26 @@ uint16 GfxMenu::mouseFindMenuSelection(Common::Point mousePosition) {
 	GuiMenuEntry *listEntry;
 	GuiMenuList::iterator listIterator;
 	GuiMenuList::iterator listEnd = _list.end();
-	uint16 curXstart = 8;
+	uint16 curXstart;
+	if (g_sci->isLanguageLTR())
+		curXstart = 8;
+	else
+		curXstart = _screen->getWidth() - 8;
 
 	listIterator = _list.begin();
 	while (listIterator != listEnd) {
 		listEntry = *listIterator;
-		if (mousePosition.x >= curXstart && mousePosition.x < curXstart + listEntry->textWidth) {
-			return listEntry->id;
+		if (g_sci->isLanguageLTR()) {
+			if (mousePosition.x >= curXstart && mousePosition.x < curXstart + listEntry->textWidth) {
+				return listEntry->id;
+			}
+			curXstart += listEntry->textWidth;
+		} else {
+			if (mousePosition.x <= curXstart && mousePosition.x > curXstart - listEntry->textWidth) {
+				return listEntry->id;
+			}
+			curXstart -= listEntry->textWidth;
 		}
-		curXstart += listEntry->textWidth;
 		listIterator++;
 	}
 	return 0;
