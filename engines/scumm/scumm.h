@@ -78,10 +78,8 @@ class WriteStream;
  */
 namespace Scumm {
 
-// GUI-options, primarily used by detection_tables.h
-#define GUIO_TRIM_FMTOWNS_TO_240_PIXELS                GUIO_GAMEOPTIONS1
 
-	class Actor;
+class Actor;
 class BaseCostumeLoader;
 class BaseCostumeRenderer;
 class BaseScummFile;

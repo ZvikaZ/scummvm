@@ -178,7 +178,7 @@ static const ExtraGuiOption fmtownsTrimTo200 = {
 };
 
 
-const ExtraGuiOptions ScummMetaEngine::getExtraGuiOptions(const Common::String &target) const {
+const ExtraGuiOptions ScummMetaEngineDetection::getExtraGuiOptions(const Common::String &target) const {
 	ExtraGuiOptions options;
 	// Query the GUI options
 	const Common::String guiOptionsString = ConfMan.get("guioptions", target);
@@ -189,7 +189,8 @@ const ExtraGuiOptions ScummMetaEngine::getExtraGuiOptions(const Common::String &
 	}
 	if (target.empty() || Common::parsePlatform(ConfMan.get("platform", target)) == Common::kPlatformNES) {
 		options.push_back(mmnesObjectLabelsOption);
-	if (target.empty() || (ConfMan.get("platform", target) == "fmtowns" && guiOptions.contains(GUIO_TRIM_FMTOWNS_TO_240_PIXELS))) {
+	}
+	if (target.empty() || (ConfMan.get("platform", target) == "fmtowns" && guiOptions.contains(GUIO_TRIM_FMTOWNS_TO_200_PIXELS))) {
 		options.push_back(fmtownsTrimTo200);
 	}
 	return options;
