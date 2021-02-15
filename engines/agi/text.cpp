@@ -21,6 +21,7 @@
  */
 
 #include "common/config-manager.h"
+#include "common/unicode-bidi.h"
 #include "agi/agi.h"
 #include "agi/sprite.h"     // for commit_both()
 #include "agi/graphics.h"
@@ -275,6 +276,28 @@ void TextMgr::displayTextInsideWindow(const char *textPtr, int16 windowRow, int1
 }
 
 void TextMgr::displayText(const char *textPtr, bool disabledLook) {
+	Common::String textString = "";
+	if (_vm->getLanguage() == Common::HE_ISR) {
+		Common::String textLogical = Common::String(textPtr);
+
+		//TODO move this code to unicode-bidi? maybe as optional
+		size_t index = textLogical.findFirstOf('\n', 0);
+		size_t prev_index = 0;
+		while (index != -1) {
+			Common::String textLogialLine = textLogical.substr(prev_index, index - prev_index);
+			Common::String textStringLine = Common::convertBiDiString(textLogialLine, _vm->getLanguage());
+			textString = textString + textStringLine + '\n';
+			prev_index = index + 1;
+			index = textLogical.findFirstOf('\n', index + 1);
+		}
+
+		Common::String textLogialLine = textLogical.substr(prev_index);
+		Common::String textStringLine = Common::convertBiDiString(textLogialLine, _vm->getLanguage());
+		textString = textString + textStringLine;
+
+		textPtr = textString.c_str();
+	}
+
 	const char *curTextPtr = textPtr;
 	byte  curCharacter = 0;
 
@@ -444,6 +467,17 @@ void TextMgr::drawMessageBox(const char *textPtr, int16 forcedHeight, int16 want
 
 	processedTextPtr = stringPrintf(textPtr);
 
+//	Common::String textString;
+//	if (_vm->getLanguage() == Common::HE_ISR) {
+//		const char *textPtrOrig = processedTextPtr;
+//		Common::String textLogical = Common::String(textPtrOrig);
+//		textString = Common::convertBiDiString(textLogical, _vm->getLanguage());
+////		processedTextPtr = textString.c_str();
+//		processedTextPtr = scumm_strdup(textString.c_str());
+//
+//	}
+
+
 	int16 calculatedWidth = 0;
 	int16 calculatedHeight = 0;
 
@@ -563,11 +597,17 @@ void TextMgr::statusDraw() {
 		clearLine(_statusRow, 15);
 
 		charAttrib_Set(0, 15);
-		charPos_Set(_statusRow, 1);
+		if (_vm->getLanguage() != Common::HE_ISR)
+			charPos_Set(_statusRow, 1);
+		else
+			charPos_Set(_statusRow, 21);		//TODO adapt to length of score? (currently it's safe - taken to the left...)
 		statusTextPtr = stringPrintf(_systemUI->getStatusTextScore());
 		displayText(statusTextPtr);
 
-		charPos_Set(_statusRow, 30);
+		if (_vm->getLanguage() != Common::HE_ISR)
+			charPos_Set(_statusRow, 30);
+		else
+			charPos_Set(_statusRow, 1);
 		if (_vm->getFlag(VM_FLAG_SOUND_ON)) {
 			statusTextPtr = stringPrintf(_systemUI->getStatusTextSoundOn());
 		} else {
@@ -684,6 +724,7 @@ void TextMgr::promptKeyPress(uint16 newKey) {
 	// but as soon as invalid characters were used in graphics mode they weren't properly shown
 	switch (_vm->getLanguage()) {
 	case Common::RU_RUS:
+	case Common::HE_ISR:
 		if (newKey >= 0x20)
 			acceptableInput = true;
 		break;
@@ -721,6 +762,8 @@ void TextMgr::promptKeyPress(uint16 newKey) {
 			_promptCursorPos--;
 			_prompt[_promptCursorPos] = 0;
 			displayCharacter(newKey);
+			if (_vm->getLanguage() == Common::HE_ISR)
+				promptRedraw();
 
 			promptRememberForAutoComplete();
 		}
@@ -750,6 +793,8 @@ void TextMgr::promptKeyPress(uint16 newKey) {
 				_promptCursorPos++;
 				_prompt[_promptCursorPos] = 0;
 				displayCharacter(newKey);
+				if (_vm->getLanguage() == Common::HE_ISR)
+					promptRedraw();
 
 				promptRememberForAutoComplete();
 			}
@@ -810,9 +855,17 @@ void TextMgr::promptRedraw() {
 		textPtr = stringPrintf(textPtr);
 		textPtr = stringWordWrap(textPtr, 40);
 
-		displayText(textPtr);
-		displayText((char *)&_prompt);
-		inputEditOff();
+		if (_vm->getLanguage() != Common::HE_ISR) {
+			displayText(textPtr);
+			displayText((char *)&_prompt);
+			inputEditOff();
+		} else {
+			charPos_Set(_promptRow, 38 - strlen((const char *)_prompt));	//TODO
+			inputEditOff();
+			displayText((char *)&_prompt);
+			displayText(textPtr);
+			charPos_Set(_promptRow, 39);
+		}
 	}
 }
 
@@ -890,7 +943,7 @@ void TextMgr::stringEdit(int16 stringMaxLen) {
 	// Caller can set the input string
 	_inputStringCursorPos = 0;
 	while (_inputStringCursorPos < inputStringLen) {
-		displayCharacter(_inputString[_inputStringCursorPos]);
+		displayCharacter(_inputString[_inputStringCursorPos]);			//TODO needs Hebrew support?
 		_inputStringCursorPos++;
 	}
 
@@ -931,7 +984,7 @@ void TextMgr::stringKeyPress(uint16 newKey) {
 		if (_inputStringCursorPos) {
 			_inputStringCursorPos--;
 			_inputString[_inputStringCursorPos] = 0;
-			displayCharacter(newKey);
+			displayCharacter(newKey);			//TODO needs Hebrew support?
 
 			stringRememberForAutoComplete();
 		}
@@ -965,6 +1018,7 @@ void TextMgr::stringKeyPress(uint16 newKey) {
 			// but as soon as invalid characters were used in graphics mode they weren't properly shown
 			switch (_vm->getLanguage()) {
 			case Common::RU_RUS:
+			case Common::HE_ISR:
 				if (newKey >= 0x20)
 					acceptableInput = true;
 				break;
@@ -981,7 +1035,7 @@ void TextMgr::stringKeyPress(uint16 newKey) {
 					_inputString[_inputStringCursorPos] = newKey;
 					_inputStringCursorPos++;
 					_inputString[_inputStringCursorPos] = 0;
-					displayCharacter(newKey);
+					displayCharacter(newKey);					//TODO needs Hebrew support?
 
 					stringRememberForAutoComplete();
 				}
