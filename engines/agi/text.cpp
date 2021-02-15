@@ -298,6 +298,30 @@ void TextMgr::displayText(const char *textPtr, bool disabledLook) {
 		textPtr = textString.c_str();
 	}
 
+	//TODO can it be more concise?
+	if (_vm->getLanguage() == Common::HE_ISR) {
+		Common::String tempStr = "";
+		size_t index = textString.findFirstOf('\n', 0);
+		if (index != -1) {
+			size_t prev_index = 0;
+			while (index != -1) {
+				Common::String textLine = textString.substr(prev_index, index - prev_index);
+				while (textLine.size() < (uint)_messageState.textSize_Width)
+					textLine = " " + textLine;
+				tempStr = tempStr + textLine + '\n';
+				prev_index = index + 1;
+				index = textString.findFirstOf('\n', index + 1);
+			}
+			Common::String textLine = textString.substr(prev_index);
+			while (textLine.size() < (uint)_messageState.textSize_Width)
+				textLine = " " + textLine;
+			textString = tempStr + textLine;
+			textPtr = textString.c_str();
+		}
+	}
+
+
+
 	const char *curTextPtr = textPtr;
 	byte  curCharacter = 0;
 
@@ -466,17 +490,6 @@ void TextMgr::drawMessageBox(const char *textPtr, int16 forcedHeight, int16 want
 	}
 
 	processedTextPtr = stringPrintf(textPtr);
-
-//	Common::String textString;
-//	if (_vm->getLanguage() == Common::HE_ISR) {
-//		const char *textPtrOrig = processedTextPtr;
-//		Common::String textLogical = Common::String(textPtrOrig);
-//		textString = Common::convertBiDiString(textLogical, _vm->getLanguage());
-////		processedTextPtr = textString.c_str();
-//		processedTextPtr = scumm_strdup(textString.c_str());
-//
-//	}
-
 
 	int16 calculatedWidth = 0;
 	int16 calculatedHeight = 0;
