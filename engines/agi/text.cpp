@@ -275,52 +275,24 @@ void TextMgr::displayTextInsideWindow(const char *textPtr, int16 windowRow, int1
 	charPos_Pop();
 }
 
+Common::String rightAlign(Common::String line, va_list args) {
+	uint width = va_arg(args, uint);
+
+	while (line.size() < width)
+		line = " " + line;
+	return line;
+}
+
 void TextMgr::displayText(const char *textPtr, bool disabledLook) {
-	Common::String textString = "";
+	Common::String textString = Common::String(textPtr);
 	if (_vm->getLanguage() == Common::HE_ISR) {
-		Common::String textLogical = Common::String(textPtr);
+		textString = Common::convertBiDiStringByLines(textString, Common::kWindows1255);
 
-		//TODO move this code to unicode-bidi? maybe as optional
-		size_t index = textLogical.findFirstOf('\n', 0);
-		size_t prev_index = 0;
-		while (index != -1) {
-			Common::String textLogialLine = textLogical.substr(prev_index, index - prev_index);
-			Common::String textStringLine = Common::convertBiDiString(textLogialLine, _vm->getLanguage());
-			textString = textString + textStringLine + '\n';
-			prev_index = index + 1;
-			index = textLogical.findFirstOf('\n', index + 1);
-		}
-
-		Common::String textLogialLine = textLogical.substr(prev_index);
-		Common::String textStringLine = Common::convertBiDiString(textLogialLine, _vm->getLanguage());
-		textString = textString + textStringLine;
+		if (textString.contains('\n')) 
+			textString = textString.forEachLine(rightAlign, (uint)_messageState.textSize_Width);
 
 		textPtr = textString.c_str();
 	}
-
-	//TODO can it be more concise?
-	if (_vm->getLanguage() == Common::HE_ISR) {
-		Common::String tempStr = "";
-		size_t index = textString.findFirstOf('\n', 0);
-		if (index != -1) {
-			size_t prev_index = 0;
-			while (index != -1) {
-				Common::String textLine = textString.substr(prev_index, index - prev_index);
-				while (textLine.size() < (uint)_messageState.textSize_Width)
-					textLine = " " + textLine;
-				tempStr = tempStr + textLine + '\n';
-				prev_index = index + 1;
-				index = textString.findFirstOf('\n', index + 1);
-			}
-			Common::String textLine = textString.substr(prev_index);
-			while (textLine.size() < (uint)_messageState.textSize_Width)
-				textLine = " " + textLine;
-			textString = tempStr + textLine;
-			textPtr = textString.c_str();
-		}
-	}
-
-
 
 	const char *curTextPtr = textPtr;
 	byte  curCharacter = 0;
