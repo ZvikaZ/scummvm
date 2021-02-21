@@ -55,7 +55,12 @@ Common::Platform AgiBase::getPlatform() const {
 }
 
 Common::Language AgiBase::getLanguage() const {
-	return _gameDescription->desc.language;
+	if (_gameDescription->desc.language != Common::UNK_LANG)
+		return _gameDescription->desc.language;
+	else if (ConfMan.hasKey("language"))
+		return Common::parseLanguage(ConfMan.get("language"));
+	else
+		return Common::UNK_LANG;
 }
 
 uint16 AgiBase::getVersion() const {

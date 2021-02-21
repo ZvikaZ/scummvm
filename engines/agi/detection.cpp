@@ -170,7 +170,7 @@ ADDetectedGame AgiMetaEngineDetection::fallbackDetect(const FileMap &allFilesXXX
 	_extra.clear();
 
 	// Set the default values for the fallback descriptor's ADGameDescription part.
-	g_fallbackDesc.desc.language = Common::HE_ISR;  //TODO DON'T COMMIT!!!!!!!!!!!!!!!!!!!!!!!!!!!  should be:  Common::UNK_LANG;
+	g_fallbackDesc.desc.language = Common::UNK_LANG;
 	g_fallbackDesc.desc.platform = Common::kPlatformDOS;
 	g_fallbackDesc.desc.flags = ADGF_NO_FLAGS;
 
