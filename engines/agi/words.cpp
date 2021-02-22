@@ -123,7 +123,10 @@ int Words::loadDictionary(const char *fname) {
 	return errOK;
 }
 
-int Words::loadExtendedDictionary(const char *fname) {
+int Words::loadExtendedDictionary(const char *sierraFname) {
+	Common::String fnameStr = Common::String(sierraFname) + ".extended";
+	const char *fname = fnameStr.c_str();
+
 	Common::File fp;
 
 	if (!fp.open(fname)) {
