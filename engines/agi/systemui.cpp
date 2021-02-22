@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
+ *HE
  */
 
 #include "agi/agi.h"
@@ -103,9 +103,9 @@ SystemUI::SystemUI(AgiEngine *vm, GfxMgr *gfx, TextMgr *text) {
 		_textRestoreGameVerify = "\x83\xAE\xE2\xAE\xA2 \xAA \xE1\xE7\xA8\xE2\xEB\xA2\xA0\xAD\xA8\xEE \xA8\xA3\xE0\xEB\x2C\n\xAE\xAF\xA8\xE1\xA0\xAD\xAD\xAE\xA9 \xAA\xA0\xAA.\n\n%s\n\n\xA8\xA7 \xE4\xA0\xA9\xAB\xA0:\n%s\n\n\x84\xAB\xEF \xAF\xE0\xAE\xA4\xAE\xAB\xA6\xA5\xAD\xA8\xEF \xAD\xA0\xA6\xAC\xA8\xE2\xA5 ENTER.\nESC - \xAE\xE2\xAC\xA5\xAD\xA0.";
 		break;
 	case Common::HE_ISR:
-		_textStatusScore = "ניקוד: %v3 מתוך %v7";		//TODO replace with codes
-		_textStatusSoundOn = "צליל: פועל";
-		//_textStatusSoundOff = "צליל: כבוי";
+		_textStatusScore = "\xf0\xe9\xf7\xe5\xe3: %v3 \xee\xfa\xe5\xea %v7";
+		_textStatusSoundOn = "\xf6\xec\xe9\xec: \xf4\xe5\xf2\xec";
+		_textStatusSoundOff = "\xf6\xec\xe9\xec: \xeb\xe1\xe5\xe9";
 		break;
 	default:
 		break;
