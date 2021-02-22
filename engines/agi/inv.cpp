@@ -65,9 +65,20 @@ void InventoryMgr::getPlayerInventory() {
 			inventoryEntry.name = _vm->objectName(objectNr);
 			inventoryEntry.row = curRow;
 			inventoryEntry.column = curColumn;
-			if (inventoryEntry.column > 1) {
-				// right side, adjust column accordingly
-				inventoryEntry.column -= strlen(inventoryEntry.name);
+			if (_vm->getLanguage() != Common::HE_ISR) {
+				if (inventoryEntry.column > 1) {
+					// right side, adjust column accordingly
+					inventoryEntry.column -= strlen(inventoryEntry.name);
+				}
+			} else {
+				// Hebrew is written from Right to Left - mirror the sides
+				if (inventoryEntry.column == 1) {
+					// right side, adjust column accordingly
+					inventoryEntry.column = 39 - strlen(inventoryEntry.name);
+				} else {
+					// left side, adjust column accordingly
+					inventoryEntry.column = 1;
+				}
 			}
 			_array.push_back(inventoryEntry);
 
