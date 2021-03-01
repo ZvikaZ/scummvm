@@ -70,8 +70,6 @@ void UnicodeBiDiText::initWithU32String(const U32String &input) {
 	FriBidiChar *visual_str = new FriBidiChar[buff_length * sizeof(FriBidiChar)];
 	_log_to_vis_index = new uint32[input_size];
 	_vis_to_log_index = new uint32[input_size];
-	if (!_pbase_dir)
-		_pbase_dir = FRIBIDI_PAR_ON;
 
 	if (!fribidi_log2vis(
 		/* input */
@@ -113,7 +111,7 @@ Common::String bidiByLineHelper(Common::String line, va_list args) {
 }
 
 String convertBiDiStringByLines(const String &input, const Common::CodePage page) {
-	uint32 pbase_dir = 0;
+	uint32 pbase_dir = SCUMMVM_FRIBIDI_PAR_ON;
 	return input.forEachLine(bidiByLineHelper, page, &pbase_dir);
 }
 
